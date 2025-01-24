@@ -4,7 +4,8 @@
     "name": "packagefactory/nodetypeobjects",
     "license": "MIT",
     "require": {
-        "neos/neos": "~8.3"
+        "neos/neos": "~8.3",
+        "php": ">=8.2"
     },
     "autoload": {
         "psr-4": {
