@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace PackageFactory\NodeTypeObjects\Command;
 
-use Behat\Gherkin\Node\NodeInterface;
 use Neos\ContentRepository\Domain\Model\NodeType;
 use Neos\ContentRepository\Domain\Service\NodeTypeManager;
 use Neos\Flow\Cli\CommandController;
@@ -84,7 +83,11 @@ class NodetypeObjectsCommandController extends CommandController
 
         $propertyAccesssors = '';
         foreach ($nodeType->getProperties() as $propertyName => $propertyConfig) {
-            $methodName = 'get' . UnicodeFunctions::ucfirst($propertyName);
+            if (str_starts_with($propertyName, '_')) {
+                $methodName = 'getInternal' . UnicodeFunctions::ucfirst(substr($propertyName, 1));
+            } else {
+                $methodName = 'get' . UnicodeFunctions::ucfirst($propertyName);
+            }
             $type = $propertyConfig[ 'type' ];
 
             $annotationType = $type;
@@ -103,6 +106,9 @@ class NodetypeObjectsCommandController extends CommandController
             } elseif ($type  === 'DateTime') {
                 $phpType = '\DateTime';
                 $annotationType = '\DateTime';
+            } elseif (str_contains($type, '\\') && !str_starts_with($type, '\\')) {
+                $annotationType = '\\' . $type;
+                $phpType =  '\\' . $type;
             }
 
             $propertyAccesssors .= <<<EOL
