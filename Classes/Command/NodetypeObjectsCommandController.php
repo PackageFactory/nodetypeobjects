@@ -123,43 +123,52 @@ class NodetypeObjectsCommandController extends CommandController
             }
             $type = $propertyConfig[ 'type' ];
 
-            $annotationType = $type;
+            $annotationType = null;
             $phpType = $type;
 
             if (str_ends_with($type, '[]')) {
+                $annotationType = $type;
                 $phpType = 'array';
             } elseif (str_starts_with($type, 'array<') && str_ends_with($type, '>')) {
                 $annotationType = substr($type , 6 ,-1) . '[]';
                 $phpType = 'array';
             } elseif ($type  === 'boolean') {
                 $phpType = 'bool';
-                $annotationType = 'bool';
             } elseif ($type  === 'integer') {
                 $phpType = 'int';
-                $annotationType = 'int';
             } elseif ($type  === 'DateTime') {
                 $phpType = '\DateTime';
-                $annotationType = '\DateTime';
             }
 
             if (str_contains($phpType, '\\') && !str_starts_with($phpType, '\\')) {
                 $phpType =  '\\' . $phpType;
             }
-            if (str_contains($annotationType, '\\') && !str_starts_with($annotationType, '\\')) {
+            if (is_string($annotationType) && str_contains($annotationType, '\\') && !str_starts_with($annotationType, '\\')) {
                 $annotationType =  '\\' . $annotationType;
             }
 
-            $propertyAccesssors .= <<<EOL
+            if ($annotationType) {
+                $propertyAccesssors .= <<<EOL
 
 
-                /**
-                 * @return $annotationType;
-                 */
-                public function $methodName(): ?$phpType
-                {
-                    return \$this->node->getProperty('$propertyName');
-                }
-            EOL;
+                    /**
+                     * @return ?$annotationType;
+                     */
+                    public function $methodName(): ?$phpType
+                    {
+                        return \$this->node->getProperty('$propertyName');
+                    }
+                EOL;
+            } else {
+                $propertyAccesssors .= <<<EOL
+
+
+                    public function $methodName(): ?$phpType
+                    {
+                        return \$this->node->getProperty('$propertyName');
+                    }
+                EOL;
+            }
         }
 
         $nodeTypeName = $nodeType->getName();
