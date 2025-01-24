@@ -55,12 +55,16 @@ class NodetypeObjectsCommandController extends CommandController
             $localName = array_pop($localNameParts);
             $localNamespace = implode('.', $localNameParts);
 
+            $filePath = $packagePath
+                . 'NodeTypes/'
+                . str_replace('.', '/', $localNamespace)
+                . '/' . $localName;
             $fileName = $localName . 'NodeObject.php';
-            $filePath = $packagePath . 'NodeTypes/' . str_replace('.', '/', $localNamespace);
 
             $classNamespace = str_replace('.', '\\' , $packageKey)
                 . '\\NodeTypes'
-                . '\\' . str_replace('.', '\\' , $localNamespace);
+                . '\\' . str_replace('.', '\\' , $localNamespace)
+                . '\\' . str_replace('.', '\\' , $localName);
 
             $className =  $localName . 'NodeObject';
 
