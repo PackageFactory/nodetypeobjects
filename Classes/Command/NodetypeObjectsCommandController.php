@@ -96,6 +96,7 @@ class NodetypeObjectsCommandController extends CommandController
             if (str_ends_with($type, '[]')) {
                 $phpType = 'array';
             } elseif (str_starts_with($type, 'array<') && str_ends_with($type, '>')) {
+                $annotationType = substr($type , 6 ,-1) . '[]';
                 $phpType = 'array';
             } elseif ($type  === 'boolean') {
                 $phpType = 'bool';
@@ -106,9 +107,13 @@ class NodetypeObjectsCommandController extends CommandController
             } elseif ($type  === 'DateTime') {
                 $phpType = '\DateTime';
                 $annotationType = '\DateTime';
-            } elseif (str_contains($type, '\\') && !str_starts_with($type, '\\')) {
-                $annotationType = '\\' . $type;
-                $phpType =  '\\' . $type;
+            }
+
+            if (str_contains($phpType, '\\') && !str_starts_with($phpType, '\\')) {
+                $phpType =  '\\' . $phpType;
+            }
+            if (str_contains($annotationType, '\\') && !str_starts_with($annotationType, '\\')) {
+                $annotationType =  '\\' . $annotationType;
             }
 
             $propertyAccesssors .= <<<EOL
