@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PackageFactory\NodeTypeObjects\Command;
@@ -6,6 +7,7 @@ namespace PackageFactory\NodeTypeObjects\Command;
 use Neos\ContentRepository\Domain\Model\NodeType;
 use Neos\ContentRepository\Domain\Service\NodeTypeManager;
 use Neos\Flow\Cli\CommandController;
+use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Package\FlowPackageInterface;
 use Neos\Flow\Package\PackageManager;
 use Neos\Utility\Files;
@@ -18,7 +20,7 @@ class NodetypeObjectsCommandController extends CommandController
 
     public function injectNodeTypeManager(NodeTypeManager $nodeTypeManager): void
     {
-       $this->nodeTypeManager = $nodeTypeManager;
+        $this->nodeTypeManager = $nodeTypeManager;
     }
 
     public function injectPackageManager(PackageManager $packageManager): void
@@ -32,9 +34,9 @@ class NodetypeObjectsCommandController extends CommandController
      * @param string $packageKey PackageKey to store the classes in
      * @return void
      */
-    public function cleanCommand(string $packageKey):void
+    public function cleanCommand(string $packageKey): void
     {
-        if($this->packageManager->isPackageAvailable($packageKey)) {
+        if ($this->packageManager->isPackageAvailable($packageKey)) {
             $package = $this->packageManager->getPackage($packageKey);
         } else {
             $this->output->outputLine("Unknown package " . $packageKey);
@@ -62,9 +64,9 @@ class NodetypeObjectsCommandController extends CommandController
      *
      * @param string $packageKey PackageKey
      */
-    public function buildCommand(string $packageKey):void
+    public function buildCommand(string $packageKey): void
     {
-        if($this->packageManager->isPackageAvailable($packageKey)) {
+        if ($this->packageManager->isPackageAvailable($packageKey)) {
             $package = $this->packageManager->getPackage($packageKey);
         } else {
             $this->output->outputLine("Unknown package " . $packageKey);
@@ -81,7 +83,7 @@ class NodetypeObjectsCommandController extends CommandController
             if (!str_starts_with($nodeType->getName(), $packageKey . ':')) {
                 continue;
             }
-            $localNameParts = explode('.', str_replace( $packageKey . ':','', $nodeType->getName()));
+            $localNameParts = explode('.', str_replace($packageKey . ':', '', $nodeType->getName()));
             $localName = array_pop($localNameParts);
             $localNamespace = implode('.', $localNameParts);
 
@@ -91,10 +93,10 @@ class NodetypeObjectsCommandController extends CommandController
                 . '/' . $localName;
             $fileName = $localName . 'NodeObject.php';
 
-            $classNamespace = str_replace('.', '\\' , $packageKey)
+            $classNamespace = str_replace('.', '\\', $packageKey)
                 . '\\NodeTypes'
-                . '\\' . str_replace('.', '\\' , $localNamespace)
-                . '\\' . str_replace('.', '\\' , $localName);
+                . '\\' . str_replace('.', '\\', $localNamespace)
+                . '\\' . str_replace('.', '\\', $localName);
 
             $className =  $localName . 'NodeObject';
 
@@ -111,7 +113,7 @@ class NodetypeObjectsCommandController extends CommandController
         }
     }
 
-    private function buildOne(FlowPackageInterface $package, NodeType $nodeType, string $classNamespace, string $className, string $filePath, string $fileName):void
+    private function buildOne(FlowPackageInterface $package, NodeType $nodeType, string $classNamespace, string $className, string $filePath, string $fileName): void
     {
 
         $propertyAccesssors = '';
@@ -130,7 +132,7 @@ class NodetypeObjectsCommandController extends CommandController
                 $annotationType = $type;
                 $phpType = 'array';
             } elseif (str_starts_with($type, 'array<') && str_ends_with($type, '>')) {
-                $annotationType = substr($type , 6 ,-1) . '[]';
+                $annotationType = substr($type, 6, -1) . '[]';
                 $phpType = 'array';
             } elseif ($type  === 'boolean') {
                 $phpType = 'bool';
