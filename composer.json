@@ -2,7 +2,7 @@
     "description": "",
     "type": "neos-package",
     "name": "packagefactory/nodetypeobjects",
-    "license": "MIT",
+    "license": "LGPL-3.0",
     "require": {
         "neos/neos": "~8.3",
         "php": ">=8.2"
@@ -19,16 +19,14 @@
     },
     "scripts": {
         "fix:code-style": [
-            "phpcbf --extensions=php --colors --standard=PSR12 ./Classes",
-            "phpcbf --extensions=php --colors --standard=PSR12 ./Tests"
+            "phpcbf --extensions=php --colors --standard=PSR12 ./Classes"
         ],
         "fix": [
             "@install",
             "@fix:code-style"
         ],
         "lint:code-style": [
-            "phpcs --extensions=php --colors --standard=PSR12 --exclude=Generic.Files.LineLength ./Classes",
-            "phpcs --extensions=php --colors --standard=PSR12 --exclude=Generic.Files.LineLength ./Tests"
+            "phpcs --extensions=php --colors --standard=PSR12 --exclude=Generic.Files.LineLength ./Classes"
         ],
         "lint:static-analysis": "phpstan analyse",
         "lint": [
@@ -39,7 +37,7 @@
         "test:unit": "vendor/bin/phpunit Tests/Unit",
         "test": [
             "@install",
-            "@test:unit"
+            "echo 'no tests yet'"
         ]
     },
     "extra": {
