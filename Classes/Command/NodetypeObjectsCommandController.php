@@ -9,6 +9,7 @@ use Neos\ContentRepository\Domain\Service\NodeTypeManager;
 use Neos\Flow\Cli\CommandController;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Package\FlowPackageInterface;
+use Neos\Flow\Package\GenericPackage;
 use Neos\Flow\Package\PackageManager;
 use Neos\Utility\Files;
 use Neos\Utility\Unicode\Functions as UnicodeFunctions;
@@ -92,6 +93,31 @@ class NodetypeObjectsCommandController extends CommandController
             $this->output->outputLine($packageKey . " is not a Flow package");
             $this->quit(1);
         }
+        if (!$package instanceof GenericPackage) {
+            $this->output->outputLine($packageKey . " is not a Generic package");
+            $this->quit(1);
+        }
+
+        /**
+         * @var array<int, array{namespace:string, classPath:string, mappingType:string}> $autoloadConfigurations
+         */
+        $autoloadConfigurations = $package->getFlattenedAutoloadConfiguration();
+        $namespace = null;
+        foreach ($autoloadConfigurations as $autoloadConfiguration) {
+            if (
+                $autoloadConfiguration['mappingType'] === 'psr-4'
+                && str_ends_with($autoloadConfiguration['namespace'], '\\NodeTypes\\')
+                && $autoloadConfiguration['classPath'] === $package->getPackagePath() . 'NodeTypes/'
+            ) {
+                $namespace = $autoloadConfiguration['namespace'];
+                break;
+            }
+        }
+
+        if ($namespace === null) {
+            $this->outputLine('<error>No PSR4-NodeTypes namespace for the NodeTypes folder is registered via composer</error>');
+            $this->quit(1);
+        }
 
         $nodeTypes = $this->nodeTypeManager->getNodeTypes(false);
         foreach ($nodeTypes as $nodeType) {
@@ -113,7 +139,7 @@ class NodetypeObjectsCommandController extends CommandController
                 $nodeTypeObjectFile->fileContent
             );
 
-            $this->outputLine(' - ' . $specification->nodeTypeName . '/' . $specification->className);
+            $this->outputLine(' - ' . $specification->nodeTypeName . ' -> ' . $specification->className);
         }
     }
 }
