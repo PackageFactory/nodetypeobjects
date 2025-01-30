@@ -4,9 +4,11 @@ on:
   push:
       branches:
         - 'main'
+        - 'neos-9'
   pull_request:
       branches:
         - 'main'
+        - 'neos-9'
 
 jobs:
     test:
