@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PackageFactory\NodeTypeObjects\Factory;
 
-use Neos\ContentRepository\Domain\Model\NodeType;
+use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\Flow\Package\FlowPackageInterface;
 use PackageFactory\NodeTypeObjects\Domain\NodePropertySpecification;
 use PackageFactory\NodeTypeObjects\Domain\NodePropertySpecificationCollection;
@@ -16,10 +16,10 @@ class NodeTypeSpecificationFactory
         FlowPackageInterface $package,
         NodeType $nodeType
     ): NodeTypeObjectSpecification {
-        if (!str_starts_with($nodeType->getName(), $package->getPackageKey() . ':')) {
+        if (!str_starts_with($nodeType->name->value, $package->getPackageKey() . ':')) {
             throw new \Exception("Only nodetypes from the given package are allowed");
         }
-        $localNameParts = explode('.', str_replace($package->getPackageKey() . ':', '', $nodeType->getName()));
+        $localNameParts = explode('.', str_replace($package->getPackageKey() . ':', '', $nodeType->name->value));
         $localName = array_pop($localNameParts);
         $localNamespace = implode('.', $localNameParts);
 
@@ -38,7 +38,7 @@ class NodeTypeSpecificationFactory
          * @var NodePropertySpecification[] $propertySpecifications
          */
         $propertySpecifications = [];
-        foreach ($nodeType->getProperties() as $propertyName => $propertyConfiguratiuon) {
+        foreach ($nodeType->getProperties() as $propertyName => $propertyConfiguration) {
             $propertySpecifications[] = new NodePropertySpecification(
                 $propertyName,
                 $nodeType->getPropertyType($propertyName)
@@ -46,7 +46,7 @@ class NodeTypeSpecificationFactory
         }
 
         return new NodeTypeObjectSpecification(
-            $nodeType->getName(),
+            $nodeType->name->value,
             $className,
             $fileName,
             new NodePropertySpecificationCollection(...$propertySpecifications)

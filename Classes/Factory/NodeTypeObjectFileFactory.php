@@ -84,7 +84,7 @@ class NodeTypeObjectFileFactory
 
         namespace $namespace;
 
-        use Neos\ContentRepository\Domain\Model\NodeInterface;
+        use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
         use Neos\Flow\Annotations as Flow;
 
         /**
@@ -96,14 +96,14 @@ class NodeTypeObjectFileFactory
         final readonly class $shortName
         {
             private function __construct(
-                public NodeInterface \$node
+                public Node \$node
             ) {
             }
 
-            public static function fromNode(NodeInterface \$node): self
+            public static function fromNode(Node \$node): self
             {
-                if (\$node->getNodeType()->getName() !== "$nodeTypeName") {
-                    throw new \Exception("unsupported nodetype " . \$node->getNodeType()->getName());
+                if (\$node->nodeTypeName->value !== "$nodeTypeName") {
+                    throw new \Exception("unsupported nodetype " . \$node->nodeTypeName->value);
                 }
                 return new self(\$node);
             }$propertyAccessors

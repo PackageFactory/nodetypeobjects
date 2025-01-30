@@ -4,35 +4,32 @@ declare(strict_types=1);
 
 namespace PackageFactory\NodeTypeObjects\Command;
 
-use Neos\ContentRepository\Domain\Model\NodeType;
-use Neos\ContentRepository\Domain\Service\NodeTypeManager;
+use Neos\ContentRepository\Core\SharedModel\ContentRepository\ContentRepositoryId;
+use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
 use Neos\Flow\Cli\CommandController;
-use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Package\FlowPackageInterface;
 use Neos\Flow\Package\PackageManager;
 use Neos\Utility\Files;
-use Neos\Utility\Unicode\Functions as UnicodeFunctions;
 use PackageFactory\NodeTypeObjects\Factory\NodeTypeObjectFileFactory;
 use PackageFactory\NodeTypeObjects\Factory\NodeTypeSpecificationFactory;
 
 class NodetypeObjectsCommandController extends CommandController
 {
-    private NodeTypeManager $nodeTypeManager;
     private PackageManager $packageManager;
     private NodeTypeSpecificationFactory $nodeTypeSpecificationFactory;
     private NodeTypeObjectFileFactory $nodeTypeObjectFileFactory;
-
-
-
-    public function injectNodeTypeManager(NodeTypeManager $nodeTypeManager): void
-    {
-        $this->nodeTypeManager = $nodeTypeManager;
-    }
+    private ContentRepositoryRegistry $contentRepositoryRegistry;
 
     public function injectPackageManager(PackageManager $packageManager): void
     {
         $this->packageManager = $packageManager;
     }
+
+    public function injectContentRepositoryRegistry(ContentRepositoryRegistry $contentRepositoryRegistry): void
+    {
+        $this->contentRepositoryRegistry = $contentRepositoryRegistry;
+    }
+
 
     public function injectNodeTypeSpecificationFactory(NodeTypeSpecificationFactory $nodeTypeSpecificationFactory): void
     {
@@ -80,7 +77,7 @@ class NodetypeObjectsCommandController extends CommandController
      *
      * @param string $packageKey PackageKey
      */
-    public function buildCommand(string $packageKey): void
+    public function buildCommand(string $packageKey, string $crId = 'default'): void
     {
         if ($this->packageManager->isPackageAvailable($packageKey)) {
             $package = $this->packageManager->getPackage($packageKey);
@@ -92,10 +89,11 @@ class NodetypeObjectsCommandController extends CommandController
             $this->output->outputLine($packageKey . " is not a Flow package");
             $this->quit(1);
         }
-
-        $nodeTypes = $this->nodeTypeManager->getNodeTypes(false);
+        $contentRepository = $this->contentRepositoryRegistry->get(ContentRepositoryId::fromString($crId));
+        $nodeTypeManager = $contentRepository->getNodeTypeManager();
+        $nodeTypes = $nodeTypeManager->getNodeTypes(false);
         foreach ($nodeTypes as $nodeType) {
-            if (!str_starts_with($nodeType->getName(), $packageKey . ':')) {
+            if (!str_starts_with($nodeType->name->value, $packageKey . ':')) {
                 continue;
             }
 
