@@ -4,9 +4,9 @@
 
 Autogenerate php classes for NodeTypes with type safe property accessor methods that allow full static analysis. 
 
-- NodeTypeObject are created for each non abatrsct NodeType in the namespace of the given package.
+- NodeTypeObject are created for each non abstract NodeType in the namespace of the given package.
 - NodeTypeObjects are stored in the `NodeTypes` folder using all parts of the NodeTypeName as folders   
-- The namespace of each NodeTypeObject is derived from the packaghe-key with added ``NodeTypes`
+- The namespace of each NodeTypeObject is derived from the package-key with added ``NodeTypes`
 - The className of a NodeTypeObject is defined by the last part of the NodeTypeName with postfix `NodeTypeObject`
 
 ## Preconditions
