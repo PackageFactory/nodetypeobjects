@@ -37,7 +37,7 @@ jobs:
 
             - name: Set Neos Version
               run: >
-                composer config minimum-stability beta
+                composer config minimum-stability beta &&
                 composer require neos/neos ^${{ matrix.neos-versions }} --no-progress --no-interaction
 
             - name: Run Linter
