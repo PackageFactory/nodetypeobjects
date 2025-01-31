@@ -107,7 +107,10 @@ class NodetypeObjectsCommandController extends CommandController
             if (
                 $autoloadConfiguration['mappingType'] === 'psr-4'
                 && str_ends_with($autoloadConfiguration['namespace'], '\\NodeTypes\\')
-                && $autoloadConfiguration['classPath'] === $package->getPackagePath() . 'NodeTypes/'
+                && (
+                    $autoloadConfiguration['classPath'] === $package->getPackagePath() . 'NodeTypes'
+                    || $autoloadConfiguration['classPath'] === $package->getPackagePath() . 'NodeTypes/'
+                )
             ) {
                 $namespace = $autoloadConfiguration['namespace'];
                 break;
