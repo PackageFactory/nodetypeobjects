@@ -36,9 +36,7 @@ jobs:
                   ini-values: date.timezone="Africa/Tunis", opcache.fast_shutdown=0, apc.enable_cli=on
 
             - name: Set Neos Version
-              run: >
-                composer config minimum-stability beta &&
-                composer require neos/neos ^${{ matrix.neos-versions }} --no-progress --no-interaction
+              run: composer require neos/neos ^${{ matrix.neos-versions }} --no-progress --no-interaction
 
             - name: Run Linter
               run: composer lint
