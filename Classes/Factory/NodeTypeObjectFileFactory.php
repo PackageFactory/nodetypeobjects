@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PackageFactory\NodeTypeObjects\Factory;
 
 use Neos\Utility\Unicode\Functions as UnicodeFunctions;
+use PackageFactory\NodeTypeObjects\Domain\NodePropertySpecification;
 use PackageFactory\NodeTypeObjects\Domain\NodeTypeObjectFile;
 use PackageFactory\NodeTypeObjects\Domain\NodeTypeObjectSpecification;
 
@@ -14,10 +15,13 @@ class NodeTypeObjectFileFactory
         NodeTypeObjectSpecification $specification,
     ): NodeTypeObjectFile {
         $propertyAccessors = '';
+        $internalPropertyAccessors = '';
         foreach ($specification->properties as $property) {
             $propertyType = $property->propertyType;
+            $propertyDefaultValue = $property->defaultValue;
             $propertyName = $property->propertyName;
-            if (str_starts_with($property->propertyName, '_')) {
+            $propertyIsInternal = str_starts_with($property->propertyName, '_');
+            if ($propertyIsInternal) {
                 $methodName = 'getInternal' . UnicodeFunctions::ucfirst(substr($propertyName, 1));
             } else {
                 $methodName = 'get' . UnicodeFunctions::ucfirst($propertyName);
@@ -47,27 +51,58 @@ class NodeTypeObjectFileFactory
                 $annotationType =  '\\' . $annotationType;
             }
 
-            if ($annotationType) {
-                $propertyAccessors .= <<<EOL
+            $returnType = ($propertyDefaultValue === null) ? '?' . $phpType : $phpType;
 
+            $defaultReturn = match(true) {
+                ($propertyType === 'DateTime' && is_string($propertyDefaultValue)) => 'new \DateTime(\'' . $propertyDefaultValue . '\')',
+                default => var_export($propertyDefaultValue, true),
+            };
+
+            $typeCheck = match($phpType) {
+                'null' => 'is_null($value)',
+                'string' => 'is_string($value)',
+                'int' => 'is_int($value)',
+                'float' => 'is_float($value)',
+                'bool' => 'is_bool($value)',
+                'array' => 'is_array($value)',
+                default => '$value instanceof ' . $phpType,
+            };
+
+            if ($annotationType) {
+                $propertyAccessor = <<<EOL
 
                     /**
                      * @return ?$annotationType;
                      */
-                    public function $methodName(): ?$phpType
+                    public function $methodName(): $returnType
                     {
-                        return \$this->node->getProperty('$propertyName');
+                        \$value = \$this->node->getProperty('$propertyName');
+                        if ($typeCheck) {
+                            return \$value;
+                        }
+                        return $defaultReturn;
                     }
+
                 EOL;
             } else {
-                $propertyAccessors .= <<<EOL
+                $propertyAccessor = <<<EOL
 
-
-                    public function $methodName(): ?$phpType
+                    public function $methodName(): $returnType
                     {
-                        return \$this->node->getProperty('$propertyName');
+                        \$value = \$this->node->getProperty('$propertyName');
+                        if ($typeCheck) {
+                            return \$value;
+                        }
+                        return $defaultReturn;
                     }
+
                 EOL;
+            }
+
+            if ($propertyIsInternal) {
+                $internalPropertyAccessors .= $propertyAccessor;
+            } else {
+                $propertyAccessors .= $propertyAccessor;
             }
         }
 
@@ -106,7 +141,13 @@ class NodeTypeObjectFileFactory
                     throw new \Exception("unsupported nodetype " . \$node->getNodeType()->getName());
                 }
                 return new self(\$node);
-            }$propertyAccessors
+            }
+
+            // property accessors
+            $propertyAccessors
+
+            // internal property accessors
+            $internalPropertyAccessors
         }
 
         EOL;
