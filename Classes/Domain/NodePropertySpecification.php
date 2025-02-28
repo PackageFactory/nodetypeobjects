@@ -10,8 +10,9 @@ use Neos\Flow\Annotations as Flow;
 readonly class NodePropertySpecification
 {
     public function __construct(
-        readonly string $propertyName,
-        readonly string $propertyType
+        public string $propertyName,
+        public string $propertyType,
+        public mixed $defaultValue,
     ) {
     }
 }

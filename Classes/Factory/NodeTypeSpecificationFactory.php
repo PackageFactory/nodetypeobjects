@@ -41,7 +41,8 @@ class NodeTypeSpecificationFactory
         foreach ($nodeType->getProperties() as $propertyName => $propertyConfiguration) {
             $propertySpecifications[] = new NodePropertySpecification(
                 $propertyName,
-                $nodeType->getPropertyType($propertyName)
+                $nodeType->getPropertyType($propertyName),
+                $propertyConfiguration['defaultValue'] ?? null
             );
         }
 

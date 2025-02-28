@@ -15,12 +15,12 @@ readonly class NodePropertySpecificationCollection implements \IteratorAggregate
     /**
      * @var NodePropertySpecification[]
      */
-    public array $properties;
+    public array $items;
 
     public function __construct(
         NodePropertySpecification ...$properties
     ) {
-        $this->properties = $properties;
+        $this->items = $properties;
     }
 
     /**
@@ -28,6 +28,6 @@ readonly class NodePropertySpecificationCollection implements \IteratorAggregate
      */
     public function getIterator(): \Generator
     {
-        yield from $this->properties;
+        yield from $this->items;
     }
 }
