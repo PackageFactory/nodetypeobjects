@@ -13,17 +13,16 @@ use Neos\Flow\Package\GenericPackage;
 use Neos\Flow\Package\PackageManager;
 use Neos\Utility\Files;
 use Neos\Utility\Unicode\Functions as UnicodeFunctions;
+use PackageFactory\NodeTypeObjects\Domain\NodeTypeObjectNameSpecification;
+use PackageFactory\NodeTypeObjects\Domain\NodeTypeObjectNameSpecificationCollection;
+use PackageFactory\NodeTypeObjects\Domain\NodeTypeObjectSpecification;
 use PackageFactory\NodeTypeObjects\Factory\NodeTypeObjectFileFactory;
-use PackageFactory\NodeTypeObjects\Factory\NodeTypeSpecificationFactory;
+use PackageFactory\NodeTypeObjects\Factory\NodeTypeObjectSpecificationFactory;
 
 class NodetypeObjectsCommandController extends CommandController
 {
     private NodeTypeManager $nodeTypeManager;
     private PackageManager $packageManager;
-    private NodeTypeSpecificationFactory $nodeTypeSpecificationFactory;
-    private NodeTypeObjectFileFactory $nodeTypeObjectFileFactory;
-
-
 
     public function injectNodeTypeManager(NodeTypeManager $nodeTypeManager): void
     {
@@ -35,18 +34,8 @@ class NodetypeObjectsCommandController extends CommandController
         $this->packageManager = $packageManager;
     }
 
-    public function injectNodeTypeSpecificationFactory(NodeTypeSpecificationFactory $nodeTypeSpecificationFactory): void
-    {
-        $this->nodeTypeSpecificationFactory = $nodeTypeSpecificationFactory;
-    }
-
-    public function injectNodeTypeObjectFileFactory(NodeTypeObjectFileFactory $nodeTypeObjectFileFactory): void
-    {
-        $this->nodeTypeObjectFileFactory = $nodeTypeObjectFileFactory;
-    }
-
     /**
-     * Remove all NodeTypeObjects from the selected package
+     * Remove all *NodeObject.php and *NodeInterface.php from the NodeTypes folder of the specified package
      *
      * @param string $packageKey PackageKey to store the classes in
      * @return void
@@ -65,7 +54,16 @@ class NodetypeObjectsCommandController extends CommandController
         }
 
         $packagePath = $package->getPackagePath();
-        $files = Files::readDirectoryRecursively($packagePath, 'NodeObject.php');
+        $files = Files::readDirectoryRecursively($packagePath . DIRECTORY_SEPARATOR . 'NodeTypes', 'NodeObject.php');
+        if (is_array($files)) {
+            foreach ($files as $file) {
+                if (is_file($file)) {
+                    unlink($file);
+                }
+                $this->outputLine(' - ' . $file);
+            }
+        }
+        $files = Files::readDirectoryRecursively($packagePath . DIRECTORY_SEPARATOR . 'NodeTypes', 'NodeInterface.php');
         if (is_array($files)) {
             foreach ($files as $file) {
                 if (is_file($file)) {
@@ -82,6 +80,55 @@ class NodetypeObjectsCommandController extends CommandController
      * @param string $packageKey PackageKey
      */
     public function buildCommand(string $packageKey): void
+    {
+        $package = $this->getPackage($packageKey);
+
+        $nodeTypes = $this->nodeTypeManager->getNodeTypes(true);
+        $nameSpecifications = [];
+
+        foreach ($nodeTypes as $nodeType) {
+            if (!str_starts_with($nodeType->getName(), $packageKey . ':')) {
+                continue;
+            }
+            $nameSpecifications[$nodeType->getName()] = NodeTypeObjectNameSpecification::createFromPackageAndNodeType($package, $nodeType);
+        }
+
+        $nameSpecificationsCollection = new NodeTypeObjectNameSpecificationCollection(...$nameSpecifications);
+
+        foreach ($nodeTypes as $nodeType) {
+            if (!str_starts_with($nodeType->getName(), $packageKey . ':')) {
+                continue;
+            }
+
+            $specification = NodeTypeObjectSpecification::createFromPackageAndNodeType($package, $nodeType, $nameSpecificationsCollection);
+
+            Files::createDirectoryRecursively($specification->names->directory);
+
+            if ($specification->names->className) {
+                file_put_contents(
+                    $specification->names->directory . DIRECTORY_SEPARATOR . $specification->names->className . '.php',
+                    $specification->toPhpClassString()
+                );
+                $this->outputLine(' - ' . $specification->names->nodeTypeName . ' -> ' . $specification->names->className);
+            }
+
+            if ($specification->names->interfaceName) {
+                file_put_contents(
+                    $specification->names->directory . DIRECTORY_SEPARATOR . $specification->names->interfaceName . '.php',
+                    $specification->toPhpInterfaceString()
+                );
+                $this->outputLine(' - ' . $specification->names->nodeTypeName . ' -> ' . $specification->names->interfaceName);
+            }
+        }
+    }
+
+    /**
+     * @param string $packageKey
+     * @return mixed|FlowPackageInterface|GenericPackage|\Neos\Flow\Package\PackageInterface
+     * @throws \Neos\Flow\Cli\Exception\StopCommandException
+     * @throws \Neos\Flow\Package\Exception\UnknownPackageException
+     */
+    protected function getPackage(string $packageKey): mixed
     {
         if ($this->packageManager->isPackageAvailable($packageKey)) {
             $package = $this->packageManager->getPackage($packageKey);
@@ -105,14 +152,14 @@ class NodetypeObjectsCommandController extends CommandController
         $namespace = null;
         foreach ($autoloadConfigurations as $autoloadConfiguration) {
             if (
-                $autoloadConfiguration['mappingType'] === 'psr-4'
-                && str_ends_with($autoloadConfiguration['namespace'], '\\NodeTypes\\')
+                $autoloadConfiguration[ 'mappingType' ] === 'psr-4'
+                && str_ends_with($autoloadConfiguration[ 'namespace' ], '\\NodeTypes\\')
                 && (
-                    $autoloadConfiguration['classPath'] === $package->getPackagePath() . 'NodeTypes'
-                    || $autoloadConfiguration['classPath'] === $package->getPackagePath() . 'NodeTypes/'
+                    $autoloadConfiguration[ 'classPath' ] === $package->getPackagePath() . 'NodeTypes'
+                    || $autoloadConfiguration[ 'classPath' ] === $package->getPackagePath() . 'NodeTypes/'
                 )
             ) {
-                $namespace = $autoloadConfiguration['namespace'];
+                $namespace = $autoloadConfiguration[ 'namespace' ];
                 break;
             }
         }
@@ -121,28 +168,6 @@ class NodetypeObjectsCommandController extends CommandController
             $this->outputLine('<error>No PSR4-NodeTypes namespace for the NodeTypes folder is registered via composer</error>');
             $this->quit(1);
         }
-
-        $nodeTypes = $this->nodeTypeManager->getNodeTypes(false);
-        foreach ($nodeTypes as $nodeType) {
-            if (!str_starts_with($nodeType->getName(), $packageKey . ':')) {
-                continue;
-            }
-
-            $specification = $this->nodeTypeSpecificationFactory->createFromPackageKeyAndNodeType(
-                $package,
-                $nodeType
-            );
-
-            $nodeTypeObjectFile = $this->nodeTypeObjectFileFactory->createNodeTypeObjectPhpCodeFromNode($specification);
-
-            Files::createDirectoryRecursively($nodeTypeObjectFile->pathName);
-
-            file_put_contents(
-                $nodeTypeObjectFile->fileNameWithPath,
-                $nodeTypeObjectFile->fileContent
-            );
-
-            $this->outputLine(' - ' . $specification->nodeTypeName . ' -> ' . $specification->className);
-        }
+        return $package;
     }
 }
