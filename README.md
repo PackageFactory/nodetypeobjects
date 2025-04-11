@@ -2,7 +2,7 @@
 
 !!! THIS IS EXPERIMENTAL ... EVERYTHING MAY CHANGE, USE AT YOUR OWN RISK !!!
 
-Autogenerate php classes for NodeTypes with type safe property accessor methods that allow full static analysis. 
+Autogenerate php classes and interfaces for NodeTypes with type safe property accessor methods that allow full static analysis. 
 
 - NodeTypeObject are created for each non abstract NodeType in the namespace of the given package.
 - NodeTypeObjects are stored in the `NodeTypes` folder using all parts of the NodeTypeName as folders   
@@ -17,6 +17,20 @@ The following preconditions have to be met for a package to use NodeTypeObjects.
 - The Package registers a PSR4 Namespace for `NodeTypes` in the `composer.json` that points to the `NodeTypes` folder.
 - The pattern `*NodeTypeObject.php` is added to `.gitignore` to avoid committing the generated files.
 - The commands `nodetypeobjects:build` and `nodetypeobjects:clean` are integrated into build processes and watchers
+
+The NodeTypes have to opt in into the generation via the following setting 
+
+```yaml
+Vendor.Site:
+  options:
+    
+    nodeTypeObjects:
+      # classes are generated for nodetypes with generateClass:true
+      generateClass: true
+      
+      # interfaces are generated for all nodetypes with generateInterface:true
+      generateInterface: true
+```
 
 ## Usage 
 

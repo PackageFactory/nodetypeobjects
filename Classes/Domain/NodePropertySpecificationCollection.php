@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PackageFactory\NodeTypeObjects\Domain;
 
+use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\Flow\Annotations as Flow;
 
 /**
@@ -29,5 +30,21 @@ readonly class NodePropertySpecificationCollection implements \IteratorAggregate
     public function getIterator(): \Generator
     {
         yield from $this->items;
+    }
+
+    public static function createFromNodeType(NodeType $nodeType): NodePropertySpecificationCollection
+    {
+        /**
+         * @var NodePropertySpecification[] $propertySpecifications
+         */
+        $propertySpecifications = [];
+        foreach ($nodeType->getProperties() as $propertyName => $propertyConfiguration) {
+            $propertySpecifications[] = new NodePropertySpecification(
+                $propertyName,
+                $nodeType->getPropertyType($propertyName),
+                $propertyConfiguration['defaultValue'] ?? null
+            );
+        }
+        return new NodePropertySpecificationCollection(...$propertySpecifications);
     }
 }

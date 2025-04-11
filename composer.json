@@ -37,7 +37,7 @@
         "test:unit": "vendor/bin/phpunit Tests/Unit",
         "test": [
             "@install",
-            "echo 'no tests yet'"
+            "@test:unit"
         ]
     },
     "extra": {
