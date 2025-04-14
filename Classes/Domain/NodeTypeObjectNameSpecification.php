@@ -16,7 +16,7 @@ readonly class NodeTypeObjectNameSpecification
         public string $nodeTypeName,
         public string $phpNamespace,
         public ?string $className,
-        public ?string $interfaceName
+        public string $interfaceName
     ) {
     }
 
@@ -43,16 +43,12 @@ readonly class NodeTypeObjectNameSpecification
             . ($localNamespace ? str_replace('.', DIRECTORY_SEPARATOR, $localNamespace) . DIRECTORY_SEPARATOR : '')
             . $localName;
 
-        if ($nodeType->getConfiguration('options.nodeTypeObjects.generateClass') === true) {
-            $className = str_replace('.', '\\', $localName) . 'NodeObject';
-        } else {
+        if ($nodeType->isAbstract()) {
             $className = null;
-        }
-        if ($nodeType->getConfiguration('options.nodeTypeObjects.generateInterface') === true) {
-            $interfaceName = str_replace('.', '\\', $localName) . 'NodeInterface';
         } else {
-            $interfaceName = null;
+            $className = str_replace('.', '\\', $localName) . 'NodeObject';
         }
+        $interfaceName = str_replace('.', '\\', $localName) . 'NodeInterface';
 
         return new self(
             $directory,

@@ -20,13 +20,6 @@ class NodeTypeObjectNameSpecificationTest extends TestCase
         // nodetype has a name and
         $nodeType = $this->createMock(NodeType::class);
         $nodeType->expects(self::any())->method('getName')->willReturn('Vendor.Example:Foo.Bar');
-        $nodeType->expects(self::any())->method('getConfiguration')->willReturnCallback(
-            fn($path) => match($path) {
-                'options.nodeTypeObjects.generateClass' => true,
-                'options.nodeTypeObjects.generateInterface' => true,
-                default => $this->fail(),
-            }
-        );
 
         $specification = NodeTypeObjectNameSpecification::createFromPackageAndNodeType(
             $package,
