@@ -55,12 +55,9 @@ readonly class NodeTypeObjectSpecification
             }
         }
 
-        if (count($interfaceNames) > 0) {
-            $interfaceDeclaration = 'implements ' . implode(', ', $interfaceNames);
-        } else {
-            $interfaceDeclaration = '';
-        }
+        $interfaceNames[] = '\\' . NodeTypeObjectInterface::class;
 
+        $interfaceDeclaration = 'implements ' . implode(', ', $interfaceNames);
 
         $class = <<<EOL
         <?php
