@@ -105,7 +105,7 @@ class NodetypeObjectsCommandController extends CommandController
                 if (!str_starts_with($nodeType->getName(), $package->getPackageKey() . ':')) {
                     continue;
                 }
-                $nameSpecifications[ $nodeType->getName() ] = NodeTypeObjectNameSpecification::createFromPackageAndNodeType($package, $nodeType);
+                $nameSpecifications[ $nodeType->getName() ] = NodeTypeObjectNameSpecification::createFromNodeType($nodeType);
             }
         }
         $nameSpecificationsCollection = new NodeTypeObjectNameSpecificationCollection(...$nameSpecifications);
@@ -119,21 +119,22 @@ class NodetypeObjectsCommandController extends CommandController
 
                 $specification = NodeTypeObjectSpecification::createFromPackageAndNodeType($package, $nodeType, $nameSpecificationsCollection);
 
-                Files::createDirectoryRecursively($specification->names->directory);
+                Files::createDirectoryRecursively($specification->directory);
+
                 $generatedFiles = [];
-                if ($specification->names->className) {
+                if ($specification->classFilename) {
                     file_put_contents(
-                        $specification->names->directory . DIRECTORY_SEPARATOR . $specification->names->className . '.php',
+                        $specification->classFilename,
                         $specification->toPhpClassString()
                     );
-                    $generatedFiles[] = $specification->names->phpNamespace . '\\' . $specification->names->className;
+                    $generatedFiles[] = $specification->names->fullyQualifiedClassName;
                 }
-                if ($specification->names->interfaceName) {
+                if ($specification->interfaceFilename) {
                     file_put_contents(
-                        $specification->names->directory . DIRECTORY_SEPARATOR . $specification->names->interfaceName . '.php',
+                        $specification->interfaceFilename,
                         $specification->toPhpInterfaceString()
                     );
-                    $generatedFiles[] = $specification->names->phpNamespace . '\\' . $specification->names->interfaceName;
+                    $generatedFiles[] = $specification->names->fullyQualifiedInterfaceName;
                 }
 
                 $this->outputLine(' - ' . $specification->names->nodeTypeName . ' -> <info>' . implode(', ', $generatedFiles) . '</info>');

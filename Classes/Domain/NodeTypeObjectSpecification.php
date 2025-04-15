@@ -15,6 +15,9 @@ readonly class NodeTypeObjectSpecification
         public NodeTypeObjectNameSpecification $names,
         public NodePropertySpecificationCollection $properties,
         public NodeTypeObjectNameSpecificationCollection $superTypes,
+        public string $directory,
+        public ?string $classFilename,
+        public ?string $interfaceFilename,
     ) {
     }
 
@@ -23,10 +26,32 @@ readonly class NodeTypeObjectSpecification
         NodeType $nodeType,
         NodeTypeObjectNameSpecificationCollection $nameCollection
     ): self {
-        return new NodeTypeObjectSpecification(
-            NodeTypeObjectNameSpecification::createFromPackageAndNodeType($package, $nodeType),
+
+        if (!str_starts_with($nodeType->getName(), $package->getPackageKey() . ':')) {
+            throw new \Exception("Only nodetypes from the given package are allowed");
+        }
+
+        $nameSpecification = NodeTypeObjectNameSpecification::createFromNodeType($nodeType);
+
+        $localNameParts = explode('.', str_replace($package->getPackageKey() . ':', '', $nodeType->getName()));
+        $localName = array_pop($localNameParts);
+        $localNamespace = implode('.', $localNameParts);
+
+        $directory = $package->getPackagePath()
+            . 'NodeTypes' . DIRECTORY_SEPARATOR
+            . ($localNamespace ? str_replace('.', DIRECTORY_SEPARATOR, $localNamespace) . DIRECTORY_SEPARATOR : '')
+            . $localName;
+
+        $classFilename = $nameSpecification->className ? $directory . DIRECTORY_SEPARATOR . $nameSpecification->className . '.php' : null;
+        $interfaceFileName =  $nameSpecification->interfaceName ? $directory . DIRECTORY_SEPARATOR . $nameSpecification->interfaceName . '.php' : null;
+
+        return new self(
+            $nameSpecification,
             NodePropertySpecificationCollection::createFromNodeType($nodeType),
-            NodeTypeObjectNameSpecificationCollection::createFromNodeTypeAndCollection($nodeType, $nameCollection)
+            NodeTypeObjectNameSpecificationCollection::createFromNodeTypeAndCollection($nodeType, $nameCollection),
+            $directory,
+            $classFilename,
+            $interfaceFileName
         );
     }
 
