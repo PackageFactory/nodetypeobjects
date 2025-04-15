@@ -6,60 +6,48 @@ namespace PackageFactory\NodeTypeObjects\Domain;
 
 use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\Flow\Annotations as Flow;
-use Neos\Flow\Package\FlowPackageInterface;
 
 #[Flow\Proxy(false)]
 readonly class NodeTypeObjectNameSpecification
 {
     public function __construct(
-        public string $directory,
         public string $nodeTypeName,
         public string $phpNamespace,
         public ?string $className,
-        public ?string $interfaceName
+        public ?string $fullyQualifiedClassName,
+        public ?string $interfaceName,
+        public ?string $fullyQualifiedInterfaceName,
     ) {
     }
 
-    public static function createFromPackageAndNodeType(
-        FlowPackageInterface $package,
+    public static function createFromNodeType(
         NodeType $nodeType
     ): self {
 
-        if (!str_starts_with($nodeType->name->value, $package->getPackageKey() . ':')) {
-            throw new \Exception("Only nodetypes from the given package are allowed");
-        }
+        list($packageKey, $nodeName) = explode(':', $nodeType->name->value, 2);
 
-        $localNameParts = explode('.', str_replace($package->getPackageKey() . ':', '', $nodeType->name->value));
+        $localNameParts = explode('.', $nodeName);
         $localName = array_pop($localNameParts);
-        $localNamespace = implode('.', $localNameParts);
 
-        $namespace = str_replace('.', '\\', $package->getPackageKey())
-            . '\\NodeTypes'
-            . ($localNamespace ? '\\' . str_replace('.', '\\', $localNamespace) : '')
-            . '\\' . $localName;
+        $phpNamespace = str_replace(['.', ':'], ['\\', '\\NodeTypes\\'], $nodeType->name->value);
 
-        $directory = $package->getPackagePath()
-            . 'NodeTypes' . DIRECTORY_SEPARATOR
-            . ($localNamespace ? str_replace('.', DIRECTORY_SEPARATOR, $localNamespace) . DIRECTORY_SEPARATOR : '')
-            . $localName;
 
-        if ($nodeType->getConfiguration('options.nodeTypeObjects.generateClass') === true) {
-            $className = str_replace('.', '\\', $localName) . 'NodeObject';
-        } else {
+        if ($nodeType->isAbstract()) {
             $className = null;
-        }
-        if ($nodeType->getConfiguration('options.nodeTypeObjects.generateInterface') === true) {
-            $interfaceName = str_replace('.', '\\', $localName) . 'NodeInterface';
         } else {
-            $interfaceName = null;
+            $className = str_replace('.', '\\', $localName) . 'NodeObject';
         }
+
+        /** @var string|null $interfaceName */
+        $interfaceName = str_replace('.', '\\', $localName) . 'NodeInterface';
 
         return new self(
-            $directory,
             $nodeType->name->value,
-            $namespace,
+            $phpNamespace,
             $className,
+            $className ? $phpNamespace . '\\' . $className : null,
             $interfaceName,
+            $interfaceName ? $phpNamespace . '\\' . $interfaceName : null
         );
     }
 }

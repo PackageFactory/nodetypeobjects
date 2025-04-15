@@ -15,6 +15,9 @@ readonly class NodeTypeObjectSpecification
         public NodeTypeObjectNameSpecification $names,
         public NodePropertySpecificationCollection $properties,
         public NodeTypeObjectNameSpecificationCollection $superTypes,
+        public string $directory,
+        public ?string $classFilename,
+        public ?string $interfaceFilename,
     ) {
     }
 
@@ -23,10 +26,32 @@ readonly class NodeTypeObjectSpecification
         NodeType $nodeType,
         NodeTypeObjectNameSpecificationCollection $nameCollection
     ): self {
-        return new NodeTypeObjectSpecification(
-            NodeTypeObjectNameSpecification::createFromPackageAndNodeType($package, $nodeType),
+
+        if (!str_starts_with($nodeType->name->value, $package->getPackageKey() . ':')) {
+            throw new \Exception("Only nodetypes from the given package are allowed");
+        }
+
+        $nameSpecification = NodeTypeObjectNameSpecification::createFromNodeType($nodeType);
+
+        $localNameParts = explode('.', str_replace($package->getPackageKey() . ':', '', $nodeType->name->value));
+        $localName = array_pop($localNameParts);
+        $localNamespace = implode('.', $localNameParts);
+
+        $directory = $package->getPackagePath()
+            . 'NodeTypes' . DIRECTORY_SEPARATOR
+            . ($localNamespace ? str_replace('.', DIRECTORY_SEPARATOR, $localNamespace) . DIRECTORY_SEPARATOR : '')
+            . $localName;
+
+        $classFilename = $nameSpecification->className ? $directory . DIRECTORY_SEPARATOR . $nameSpecification->className . '.php' : null;
+        $interfaceFileName =  $nameSpecification->interfaceName ? $directory . DIRECTORY_SEPARATOR . $nameSpecification->interfaceName . '.php' : null;
+
+        return new self(
+            $nameSpecification,
             NodePropertySpecificationCollection::createFromNodeType($nodeType),
-            NodeTypeObjectNameSpecificationCollection::createFromNodeTypeAndCollection($nodeType, $nameCollection)
+            NodeTypeObjectNameSpecificationCollection::createFromNodeTypeAndCollection($nodeType, $nameCollection),
+            $directory,
+            $classFilename,
+            $interfaceFileName
         );
     }
 
@@ -55,12 +80,9 @@ readonly class NodeTypeObjectSpecification
             }
         }
 
-        if (count($interfaceNames) > 0) {
-            $interfaceDeclaration = 'implements ' . implode(', ', $interfaceNames);
-        } else {
-            $interfaceDeclaration = '';
-        }
+        $interfaceNames[] = '\\' . NodeTypeObjectInterface::class;
 
+        $interfaceDeclaration = 'implements ' . implode(', ', $interfaceNames);
 
         $class = <<<EOL
         <?php
@@ -69,7 +91,7 @@ readonly class NodeTypeObjectSpecification
 
         namespace {$this->names->phpNamespace};
 
-        use Neos\ContentRepository\Domain\Model\NodeInterface;
+        use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
         use Neos\Flow\Annotations as Flow;
 
         /**
@@ -81,14 +103,14 @@ readonly class NodeTypeObjectSpecification
         final readonly class {$this->names->className} {$interfaceDeclaration}
         {
             private function __construct(
-                public NodeInterface \$node
+                public Node \$node
             ) {
             }
 
-            public static function fromNode(NodeInterface \$node): self
+            public static function fromNode(Node \$node): self
             {
-                if (\$node->getNodeType()->getName() !== "{$this->names->nodeTypeName}") {
-                    throw new \Exception("unsupported nodetype " . \$node->getNodeType()->getName());
+                if (\$node->nodeTypeName->value !== "{$this->names->nodeTypeName}") {
+                    throw new \Exception("unsupported nodetype " . \$node->nodeTypeName->value);
                 }
                 return new self(\$node);
             }

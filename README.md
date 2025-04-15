@@ -18,20 +18,6 @@ The following preconditions have to be met for a package to use NodeTypeObjects.
 - The pattern `*NodeTypeObject.php` is added to `.gitignore` to avoid committing the generated files.
 - The commands `nodetypeobjects:build` and `nodetypeobjects:clean` are integrated into build processes and watchers
 
-The NodeTypes have to opt in into the generation via the following setting 
-
-```yaml
-Vendor.Site:
-  options:
-    
-    nodeTypeObjects:
-      # classes are generated for nodetypes with generateClass:true
-      generateClass: true
-      
-      # interfaces are generated for all nodetypes with generateInterface:true
-      generateInterface: true
-```
-
 ## Usage 
 
 The package defines the following cli commands

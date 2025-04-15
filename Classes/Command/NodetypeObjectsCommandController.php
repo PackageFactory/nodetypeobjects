@@ -32,41 +32,46 @@ class NodetypeObjectsCommandController extends CommandController
     }
 
     /**
-     * Remove all *NodeObject.php and *NodeInterface.php from the NodeTypes folder of the specified package
+     * Remove all *NodeObject.php and *NodeInterface.php from the NodeTypes folder of the specified packages
      *
-     * @param string $packageKey PackageKey to store the classes in
+     * @param string $packageKeys PackageKey or Pattern, can be used seperated by comma
      * @return void
      */
-    public function cleanCommand(string $packageKey): void
+    public function cleanCommand(string $packageKeys): void
     {
-        if ($this->packageManager->isPackageAvailable($packageKey)) {
-            $package = $this->packageManager->getPackage($packageKey);
+        $packages = $this->findPackagesByPackageKeyPattern($packageKeys);
+
+        if (empty($packages)) {
+            $this->output->outputLine('No packages found for packageKeys <error>"%s"</error>:', [$packageKeys]);
+            $this->quit(1);
         } else {
-            $this->output->outputLine("Unknown package " . $packageKey);
-            $this->quit(1);
-        }
-        if (!$package instanceof FlowPackageInterface) {
-            $this->output->outputLine($packageKey . " is not a Flow package");
-            $this->quit(1);
+            $keys = array_map(fn (FlowPackageInterface $package) => $package->getPackageKey(), $packages);
+            $this->output->outputLine('Removing NodeObjects and NodeInterfaces from packages <info>"%s"</info>:', [implode(', ', $keys)]);
         }
 
-        $packagePath = $package->getPackagePath();
-        $files = Files::readDirectoryRecursively($packagePath . DIRECTORY_SEPARATOR . 'NodeTypes', 'NodeObject.php');
-        if (is_array($files)) {
-            foreach ($files as $file) {
-                if (is_file($file)) {
-                    unlink($file);
-                }
-                $this->outputLine(' - ' . $file);
+        foreach ($packages as $package) {
+            $packagePath = $package->getPackagePath();
+            if (!file_exists($packagePath . DIRECTORY_SEPARATOR . 'NodeTypes')) {
+                continue;
             }
-        }
-        $files = Files::readDirectoryRecursively($packagePath . DIRECTORY_SEPARATOR . 'NodeTypes', 'NodeInterface.php');
-        if (is_array($files)) {
-            foreach ($files as $file) {
-                if (is_file($file)) {
-                    unlink($file);
+
+            $files = Files::readDirectoryRecursively($packagePath . DIRECTORY_SEPARATOR . 'NodeTypes', 'NodeObject.php');
+            if (is_array($files)) {
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        unlink($file);
+                    }
+                    $this->outputLine(' - ' . $file);
                 }
-                $this->outputLine(' - ' . $file);
+            }
+            $files = Files::readDirectoryRecursively($packagePath . DIRECTORY_SEPARATOR . 'NodeTypes', 'NodeInterface.php');
+            if (is_array($files)) {
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        unlink($file);
+                    }
+                    $this->outputLine(' - ' . $file);
+                }
             }
         }
     }
@@ -74,60 +79,72 @@ class NodetypeObjectsCommandController extends CommandController
     /**
      * Create new NodeTypeObjects for the selected Package
      *
-     * @param string $packageKey PackageKey
+     * @param string $packageKeys PackageKey or Pattern, can be used seperated comma
      */
-    public function buildCommand(string $packageKey, string $crId = 'default'): void
+    public function buildCommand(string $packageKeys, string $crId = 'default'): void
     {
-        $package = $this->getPackage($packageKey);
+        $packages = $this->findPackagesByPackageKeyPattern($packageKeys);
+
+        if (empty($packages)) {
+            $this->output->outputLine('No packages found for packageKeys <error>"%s"</error>:', [$packageKeys]);
+            $this->quit(1);
+        } else {
+            $keys = array_map(fn (FlowPackageInterface $package) => $package->getPackageKey(), $packages);
+            $this->output->outputLine('Building NodeObjects and NodeInterfaces for packages <info>"%s"</info>:', [implode(', ', $keys)]);
+        }
 
         $contentRepository = $this->contentRepositoryRegistry->get(ContentRepositoryId::fromString($crId));
         $nodeTypeManager = $contentRepository->getNodeTypeManager();
-        $nodeTypes = $nodeTypeManager->getNodeTypes();
+        $nodeTypes = $nodeTypeManager->getNodeTypes(true);
         $nameSpecifications = [];
-
-        foreach ($nodeTypes as $nodeType) {
-            if (!str_starts_with($nodeType->name->value, $packageKey . ':')) {
-                continue;
+        foreach ($packages as $package) {
+            foreach ($nodeTypes as $nodeType) {
+                if (!str_starts_with($nodeType->name->value, $package->getPackageKey()  . ':')) {
+                    continue;
+                }
+                $nameSpecifications[$nodeType->name->value] = NodeTypeObjectNameSpecification::createFromNodeType($nodeType);
             }
-            $nameSpecifications[$nodeType->name->value] = NodeTypeObjectNameSpecification::createFromPackageAndNodeType($package, $nodeType);
         }
-
         $nameSpecificationsCollection = new NodeTypeObjectNameSpecificationCollection(...$nameSpecifications);
 
-        foreach ($nodeTypes as $nodeType) {
-            if (!str_starts_with($nodeType->name->value, $packageKey . ':')) {
-                continue;
-            }
+        // loop 2 build interfaces and objects
+        foreach ($packages as $package) {
+            foreach ($nodeTypes as $nodeType) {
+                if (!str_starts_with($nodeType->name->value, $package->getPackageKey() . ':')) {
+                    continue;
+                }
 
-            $specification = NodeTypeObjectSpecification::createFromPackageAndNodeType($package, $nodeType, $nameSpecificationsCollection);
+                $specification = NodeTypeObjectSpecification::createFromPackageAndNodeType($package, $nodeType, $nameSpecificationsCollection);
 
-            Files::createDirectoryRecursively($specification->names->directory);
+                Files::createDirectoryRecursively($specification->directory);
 
-            if ($specification->names->className) {
-                file_put_contents(
-                    $specification->names->directory . DIRECTORY_SEPARATOR . $specification->names->className . '.php',
-                    $specification->toPhpClassString()
-                );
-                $this->outputLine(' - ' . $specification->names->nodeTypeName . ' -> ' . $specification->names->className);
-            }
+                $generatedFiles = [];
+                if ($specification->classFilename) {
+                    file_put_contents(
+                        $specification->classFilename,
+                        $specification->toPhpClassString()
+                    );
+                    $generatedFiles[] = $specification->names->fullyQualifiedClassName;
+                }
+                if ($specification->interfaceFilename) {
+                    file_put_contents(
+                        $specification->interfaceFilename,
+                        $specification->toPhpInterfaceString()
+                    );
+                    $generatedFiles[] = $specification->names->fullyQualifiedInterfaceName;
+                }
 
-            if ($specification->names->interfaceName) {
-                file_put_contents(
-                    $specification->names->directory . DIRECTORY_SEPARATOR . $specification->names->interfaceName . '.php',
-                    $specification->toPhpInterfaceString()
-                );
-                $this->outputLine(' - ' . $specification->names->nodeTypeName . ' -> ' . $specification->names->interfaceName);
+                $this->outputLine(' - ' . $specification->names->nodeTypeName . ' -> <info>' . implode(', ', $generatedFiles) . '</info>');
             }
         }
     }
 
     /**
      * @param string $packageKey
-     * @return FlowPackageInterface
      * @throws \Neos\Flow\Cli\Exception\StopCommandException
      * @throws \Neos\Flow\Package\Exception\UnknownPackageException
      */
-    protected function getPackage(string $packageKey): FlowPackageInterface
+    protected function getPackage(string $packageKey): FlowPackageInterface & GenericPackage
     {
         if ($this->packageManager->isPackageAvailable($packageKey)) {
             $package = $this->packageManager->getPackage($packageKey);
@@ -167,7 +184,28 @@ class NodetypeObjectsCommandController extends CommandController
             $this->outputLine('<error>No PSR4-NodeTypes namespace for the NodeTypes folder is registered via composer</error>');
             $this->quit(1);
         }
-
         return $package;
+    }
+
+    /**
+     * @param string $packageKeys
+     * @return FlowPackageInterface[]
+     */
+    protected function findPackagesByPackageKeyPattern(string $packageKeys): array
+    {
+        $packageKeyPatterns = explode(',', $packageKeys);
+
+        $allFlowPackages = $this->packageManager->getFlowPackages();
+
+        $packages = [];
+        foreach ($allFlowPackages as $flowPackage) {
+            foreach ($packageKeyPatterns as $packageKeyPattern) {
+                if (fnmatch($packageKeyPattern, $flowPackage->getPackageKey())) {
+                    $packages[ $flowPackage->getPackageKey() ] = $flowPackage;
+                    break;
+                }
+            }
+        }
+        return $packages;
     }
 }
