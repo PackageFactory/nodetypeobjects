@@ -4,14 +4,16 @@ declare(strict_types=1);
 namespace PackageFactory\NodeTypeObjects\Test;
 
 use Neos\ContentRepository\Domain\Model\NodeType;
-use Neos\Flow\Package\FlowPackageInterface;
 use PackageFactory\NodeTypeObjects\Domain\NodeTypeObjectNameSpecification;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class NodeTypeObjectNameSpecificationTest extends TestCase
 {
 
-    public function testDetectionOfNamesFromNodeType(): void
+    #[Test]
+    public function detectionOfNamesFromNodeType(): void
     {
         $nodeType = $this->createMock(NodeType::class);
         $nodeType->expects(self::any())->method('getName')->willReturn('Vendor.Example:Foo.Bar');
@@ -33,7 +35,8 @@ class NodeTypeObjectNameSpecificationTest extends TestCase
         );
     }
 
-    public function testNoClassesForAbstractNodeType(): void
+    #[Test]
+    public function noClassesButInterfaceForAbstractNodeType(): void
     {
         $nodeType = $this->createMock(NodeType::class);
         $nodeType->expects(self::any())->method('getName')->willReturn('Vendor.Example:Foo.Bar');

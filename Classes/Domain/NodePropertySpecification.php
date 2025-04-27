@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PackageFactory\NodeTypeObjects\Domain;
 
+use Neos\ContentRepository\Domain\Model\NodeType;
 use Neos\Flow\Annotations as Flow;
 use Neos\Utility\Unicode\Functions as UnicodeFunctions;
 
@@ -153,5 +154,14 @@ readonly class NodePropertySpecification
         }
 
         return $propertyAccessor;
+    }
+
+    public static function createFromNodeTypeAndPropertyName(NodeType $nodeType, string $propertyName): self
+    {
+        return new NodePropertySpecification(
+            $propertyName,
+            $nodeType->getPropertyType($propertyName),
+            $nodeType->getConfiguration('properties.' . $propertyName . '.defaultValue') ?? null
+        );
     }
 }
