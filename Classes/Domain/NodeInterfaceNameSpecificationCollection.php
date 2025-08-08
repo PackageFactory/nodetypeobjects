@@ -37,7 +37,7 @@ readonly class NodeInterfaceNameSpecificationCollection
         ];
         foreach ($nodeType->getDeclaredSuperTypes() as $superType) {
             $interface = NodeInterfaceNameSpecification::createFromNodeType($superType);
-            if ($checkForExistence && interface_exists($interface->fullyQualifiedInterfaceName)) {
+            if ($checkForExistence && interface_exists($interface->getFullyQualifiedClassName())) {
                 $interfaces[] = $interface;
             } else {
                 $interfaces[] = $interface;
@@ -51,7 +51,7 @@ readonly class NodeInterfaceNameSpecificationCollection
         if (empty($this->items)) {
             return '';
         } else {
-            return 'implements ' . implode(', ', array_map(fn(NodeInterfaceNameSpecification $item)=> $item->fullyQualifiedInterfaceName, $this->items));
+            return 'implements ' . implode(', ', array_map(fn(NodeInterfaceNameSpecification $item)=> $item->getFullyQualifiedClassName(), $this->items));
         }
     }
 }

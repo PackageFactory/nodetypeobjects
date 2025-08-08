@@ -15,8 +15,12 @@ readonly class NodeObjectNameSpecification
         public string $nodeTypeName,
         public string $phpNamespace,
         public string $className,
-        public string $fullyQualifiedClassName,
     ) {
+    }
+
+    public function getFullyQualifiedClassName(): string
+    {
+        return $this->phpNamespace . '\\' . $this->className;
     }
 
     public static function createFromNodeTypeName(
@@ -35,7 +39,6 @@ readonly class NodeObjectNameSpecification
             $nodeTypeName->value,
             $phpNamespace,
             $className,
-            $phpNamespace . '\\' . $className
         );
     }
 

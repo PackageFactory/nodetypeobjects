@@ -28,7 +28,6 @@ class NodeObjectNameSpecificationTest extends TestCase
                 'Vendor.Example:Foo.Bar',
                 'Vendor\Example\NodeTypes\Foo\Bar',
                 'BarNodeObject',
-                'Vendor\Example\NodeTypes\Foo\Bar\BarNodeObject',
             ),
             $specification
         );

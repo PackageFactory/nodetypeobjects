@@ -29,7 +29,6 @@ class NodeInterfaceNameSpecificationTest extends TestCase
                 'Vendor.Example:Foo.Bar',
                 'Vendor\Example\NodeTypes\Foo\Bar',
                 'BarNodeInterface',
-                'Vendor\Example\NodeTypes\Foo\Bar\BarNodeInterface',
             ),
             $specification
         );

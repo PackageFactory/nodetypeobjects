@@ -12,7 +12,7 @@ class NodeObjectFactory
     public static function forNode(Node $node): NodeObjectInterface
     {
         $nodeObjectName = NodeObjectNameSpecification::createFromNodeTypeName($node->nodeTypeName);
-        $nodeObjectClass = $nodeObjectName->fullyQualifiedClassName;
+        $nodeObjectClass = $nodeObjectName->getFullyQualifiedClassName();
         if (class_exists($nodeObjectClass) && is_a($nodeObjectClass, NodeObjectInterface::class, true)) {
             return $nodeObjectClass::fromNode($node);
         } else {
@@ -23,7 +23,7 @@ class NodeObjectFactory
     public static function tryForNode(Node $node): ?NodeObjectInterface
     {
         $nodeObjectName = NodeObjectNameSpecification::createFromNodeTypeName($node->nodeTypeName);
-        $nodeObjectClass = $nodeObjectName->fullyQualifiedClassName;
+        $nodeObjectClass = $nodeObjectName->getFullyQualifiedClassName();
         if (class_exists($nodeObjectClass) && is_a($nodeObjectClass, NodeObjectInterface::class, true)) {
             return $nodeObjectClass::fromNode($node);
         } else {

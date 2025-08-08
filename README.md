@@ -6,7 +6,7 @@ Autogenerate php classes and interfaces for NodeTypes with type safe property ac
 
 - NodeObjects are created for each non abstract NodeType in the namespace of the given package.
 - NodeInterfaces are created for each NodeType in the namespace of the given package.
-- NodeObjects and NodeInterfaces are stored in the `NodeTypes` folder using all parts of the NodeTypeName as folders   
+- NodeObjects and NodeInterfaces are stored in the `NodeTypes` folder using all parts of the NodeTypeName as folders
 - The namespace of each NodeTypeObject/NodeInterface is derived from the package-key with added ``NodeTypes`
 - The className of a NodeObject is defined by the last part of the NodeTypeName with postfix `NodeObject`
 - The interfaceName of a NodeInterface is defined by the last part of the NodeTypeName with postfix `NodeInterface`

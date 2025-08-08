@@ -14,9 +14,13 @@ readonly class NodeInterfaceNameSpecification
     public function __construct(
         public string $nodeTypeName,
         public string $phpNamespace,
-        public string $interfaceName,
-        public string $fullyQualifiedInterfaceName,
+        public string $interfaceName
     ) {
+    }
+
+    public function getFullyQualifiedClassName(): string
+    {
+        return $this->phpNamespace . '\\' . $this->interfaceName;
     }
 
     public static function createFromNodeTypeName(
@@ -34,8 +38,7 @@ readonly class NodeInterfaceNameSpecification
         return new self(
             $nodeTypeName->value,
             $phpNamespace,
-            $interfaceName,
-            $phpNamespace . '\\' . $interfaceName
+            $interfaceName
         );
     }
 

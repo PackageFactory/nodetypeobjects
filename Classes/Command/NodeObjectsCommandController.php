@@ -101,7 +101,7 @@ class NodeObjectsCommandController extends CommandController
                 $interfaceSpecification->interfaceFilename,
                 $interfaceSpecification->toPhpString()
             );
-            $this->outputLine(' - ' . $interfaceSpecification->interfaceName->nodeTypeName . ' -> <info>' . $interfaceSpecification->interfaceFilename . '</info>');
+            $this->outputLine(' - ' . $interfaceSpecification->interfaceName->nodeTypeName . ' -> <info>' . $interfaceSpecification->interfaceName->getFullyQualifiedClassName() . '</info>');
         }
 
         // loop 2 build objects for all non abstract nodetypes in package
@@ -121,7 +121,7 @@ class NodeObjectsCommandController extends CommandController
                 $objectSpecification->classFilename,
                 $objectSpecification->toPhpString()
             );
-            $this->outputLine(' - ' . $objectSpecification->objectName->nodeTypeName . ' -> <info>' . $objectSpecification->objectName->fullyQualifiedClassName . '</info>');
+            $this->outputLine(' - ' . $objectSpecification->objectName->nodeTypeName . ' -> <info>' . $objectSpecification->objectName->getFullyQualifiedClassName() . '</info>');
         }
     }
 
