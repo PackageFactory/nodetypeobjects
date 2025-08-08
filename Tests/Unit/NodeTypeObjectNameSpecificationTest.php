@@ -7,18 +7,18 @@ use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\ContentRepository\Core\NodeType\NodeTypeName;
 use PackageFactory\NodeTypeObjects\Domain\NodeTypeObjectNameSpecification;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class NodeTypeObjectNameSpecificationTest extends TestCase
 {
 
-    public function testDetectionOfNamesFromNodeType(): void
+    #[Test]
+    public function detectionOfNamesFromNodeType(): void
     {
         $nodeType = new NodeType(
             NodeTypeName::fromString('Vendor.Example:Foo.Bar'),
             [],
-            [
-                'abstract' => false
-            ]
+            []
         );
 
         $specification = NodeTypeObjectNameSpecification::createFromNodeType(
@@ -38,7 +38,8 @@ class NodeTypeObjectNameSpecificationTest extends TestCase
         );
     }
 
-    public function testNoClassesForAbstractNodeType(): void
+    #[Test]
+    public function noClassesButInterfaceForAbstractNodeType(): void
     {
         $nodeType = new NodeType(
             NodeTypeName::fromString('Vendor.Example:Foo.Bar'),

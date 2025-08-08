@@ -39,11 +39,7 @@ readonly class NodePropertySpecificationCollection implements \IteratorAggregate
          */
         $propertySpecifications = [];
         foreach ($nodeType->getProperties() as $propertyName => $propertyConfiguration) {
-            $propertySpecifications[] = new NodePropertySpecification(
-                $propertyName,
-                $nodeType->getPropertyType($propertyName),
-                $propertyConfiguration['defaultValue'] ?? null
-            );
+            $propertySpecifications[] = NodePropertySpecification::createFromNodeTypeAndPropertyName($nodeType, $propertyName);
         }
         return new NodePropertySpecificationCollection(...$propertySpecifications);
     }

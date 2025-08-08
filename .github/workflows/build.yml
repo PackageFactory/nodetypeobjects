@@ -3,12 +3,14 @@ name: build
 on:
   push:
       branches:
-        - 'main'
+        - 'neos-8'
         - 'neos-9'
+        - '1.0'
   pull_request:
       branches:
-        - 'main'
+        - 'neos-8'
         - 'neos-9'
+        - '1.0'
 
 jobs:
     test:

@@ -15,7 +15,8 @@
     "require-dev": {
         "phpunit/phpunit": "^10.0",
         "phpstan/phpstan": "^1.10",
-        "squizlabs/php_codesniffer": "^3.7"
+        "squizlabs/php_codesniffer": "^3.7",
+        "neos/contentgraph-doctrinedbaladapter": "~9.0 || dev-master"
     },
     "scripts": {
         "fix:code-style": [
@@ -34,9 +35,8 @@
             "@lint:code-style",
             "@lint:static-analysis"
         ],
-        "test:unit": "vendor/bin/phpunit Tests/Unit",
+        "test:unit": "vendor/bin/phpunit Tests/Unit --display-phpunit-deprecations",
         "test": [
-            "@install",
             "@test:unit"
         ]
     },

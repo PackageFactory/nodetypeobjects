@@ -107,7 +107,8 @@ class NodetypeObjectsCommandController extends CommandController
         }
         $nameSpecificationsCollection = new NodeTypeObjectNameSpecificationCollection(...$nameSpecifications);
 
-        // loop 2 build interfaces and objects
+        // loop 1 build interfaces
+        // loop 2 build objects
         foreach ($packages as $package) {
             foreach ($nodeTypes as $nodeType) {
                 if (!str_starts_with($nodeType->name->value, $package->getPackageKey() . ':')) {
