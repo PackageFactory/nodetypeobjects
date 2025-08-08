@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PackageFactory\NodeTypeObjects\Domain;
+namespace PackageFactory\NodeTypeObjects;
 
 use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
 

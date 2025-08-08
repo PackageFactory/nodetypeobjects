@@ -9,13 +9,13 @@ use Neos\ContentRepository\Core\NodeType\NodeTypeName;
 use Neos\Flow\Annotations as Flow;
 
 #[Flow\Proxy(false)]
-readonly class NodeObjectNameSpecification
+readonly class NodeInterfaceNameSpecification
 {
     public function __construct(
         public string $nodeTypeName,
         public string $phpNamespace,
-        public string $className,
-        public string $fullyQualifiedClassName,
+        public string $interfaceName,
+        public string $fullyQualifiedInterfaceName,
     ) {
     }
 
@@ -29,13 +29,13 @@ readonly class NodeObjectNameSpecification
         $localName = array_pop($localNameParts);
 
         $phpNamespace = str_replace(['.', ':'], ['\\', '\\NodeTypes\\'], $nodeTypeName->value);
-        $className = str_replace('.', '\\', $localName) . 'NodeObject';
+        $interfaceName = str_replace('.', '\\', $localName) . 'NodeInterface';
 
         return new self(
             $nodeTypeName->value,
             $phpNamespace,
-            $className,
-            $phpNamespace . '\\' . $className
+            $interfaceName,
+            $phpNamespace . '\\' . $interfaceName
         );
     }
 

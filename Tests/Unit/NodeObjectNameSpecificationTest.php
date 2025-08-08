@@ -9,7 +9,7 @@ use PackageFactory\NodeTypeObjects\Domain\NodeObjectNameSpecification;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class NodeTypeObjectNameSpecificationTest extends TestCase
+class NodeObjectNameSpecificationTest extends TestCase
 {
 
     #[Test]
@@ -31,36 +31,6 @@ class NodeTypeObjectNameSpecificationTest extends TestCase
                 'Vendor\Example\NodeTypes\Foo\Bar',
                 'BarNodeObject',
                 'Vendor\Example\NodeTypes\Foo\Bar\BarNodeObject',
-                'BarNodeInterface',
-                'Vendor\Example\NodeTypes\Foo\Bar\BarNodeInterface'
-            ),
-            $specification
-        );
-    }
-
-    #[Test]
-    public function noClassesButInterfaceForAbstractNodeType(): void
-    {
-        $nodeType = new NodeType(
-            NodeTypeName::fromString('Vendor.Example:Foo.Bar'),
-            [],
-            [
-                'abstract' => true
-            ]
-        );
-
-        $specification = NodeObjectNameSpecification::createFromNodeType(
-            $nodeType,
-        );
-
-        $this->assertEquals(
-            new NodeObjectNameSpecification(
-                'Vendor.Example:Foo.Bar',
-                'Vendor\Example\NodeTypes\Foo\Bar',
-                null,
-                null,
-                'BarNodeInterface',
-                'Vendor\Example\NodeTypes\Foo\Bar\BarNodeInterface'
             ),
             $specification
         );

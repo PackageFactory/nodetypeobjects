@@ -9,14 +9,14 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Package\FlowPackageInterface;
 
 #[Flow\Proxy(false)]
-readonly class NodeObjectSpecification
+readonly class NodeInterfaceSpecification
 {
     public function __construct(
-        public NodeObjectNameSpecification $objectName,
+        public NodeInterfaceNameSpecification $interfaceName,
         public NodeInterfaceNameSpecificationCollection $interfaceNames,
         public NodePropertySpecificationCollection $properties,
         public string $directory,
-        public string $classFilename,
+        public string $interfaceFilename,
     ) {
     }
 
@@ -29,7 +29,7 @@ readonly class NodeObjectSpecification
             throw new \Exception("Only nodetypes from the given package are allowed");
         }
 
-        $nameSpecification = NodeObjectNameSpecification::createFromNodeType($nodeType);
+        $nameSpecification = NodeInterfaceNameSpecification::createFromNodeType($nodeType);
 
         $localNameParts = explode('.', str_replace($package->getPackageKey() . ':', '', $nodeType->name->value));
         $localName = array_pop($localNameParts);
@@ -40,41 +40,40 @@ readonly class NodeObjectSpecification
             . ($localNamespace ? str_replace('.', DIRECTORY_SEPARATOR, $localNamespace) . DIRECTORY_SEPARATOR : '')
             . $localName;
 
-        $classFilename = $directory . DIRECTORY_SEPARATOR . $nameSpecification->className . '.php';
+        $interfaceFileName =  $directory . DIRECTORY_SEPARATOR . $nameSpecification->interfaceName . '.php';
 
         return new self(
             $nameSpecification,
-            NodeInterfaceNameSpecificationCollection::createFromNodeType($nodeType, true),
+            NodeInterfaceNameSpecificationCollection::createFromNodeType($nodeType),
             NodePropertySpecificationCollection::createFromNodeType($nodeType),
             $directory,
-            $classFilename
+            $interfaceFileName
         );
     }
 
-    public function toPhpString(): string
+    public function toPhpString(): ?string
     {
+
         $propertyAccessors = '';
         $internalPropertyAccessors = '';
 
         foreach ($this->properties as $property) {
             $propertyIsInternal = str_starts_with($property->propertyName, '_');
             if ($propertyIsInternal) {
-                $internalPropertyAccessors .= $property->toPhpClassMethodString();
+                $internalPropertyAccessors .= $property->toPhpInterfaceMethodString();
             } else {
-                $propertyAccessors .= $property->toPhpClassMethodString();
+                $propertyAccessors .= $property->toPhpInterfaceMethodString();
             }
         }
-
-        $interfaceDeclaration = $this->interfaceNames->asImplementsStatement();
 
         $class = <<<EOL
         <?php
 
         declare(strict_types=1);
 
-        namespace {$this->objectName->phpNamespace};
+        namespace {$this->interfaceName->phpNamespace};
 
-        use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
+        use Neos\ContentRepository\Domain\Model\NodeInterface;
         use Neos\Flow\Annotations as Flow;
 
         /**
@@ -82,27 +81,13 @@ readonly class NodeObjectSpecification
          *
          * run `./flow nodetypeobjects:build` to regenerate this
          */
-        #[Flow\Proxy(false)]
-        final readonly class {$this->objectName->className} {$interfaceDeclaration}
+        interface {$this->interfaceName->interfaceName}
         {
-            private function __construct(
-                public Node \$node
-            ) {
-            }
-
-            public static function fromNode(Node \$node): self
-            {
-                if (\$node->nodeTypeName->value !== "{$this->objectName->nodeTypeName}") {
-                    throw new \Exception("unsupported nodetype " . \$node->nodeTypeName->value);
-                }
-                return new self(\$node);
-            }
-
             // property accessors
-            {$propertyAccessors}
+            $propertyAccessors
 
             // internal property accessors
-            {$internalPropertyAccessors}
+            $internalPropertyAccessors
         }
 
         EOL;

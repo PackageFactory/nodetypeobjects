@@ -33,15 +33,8 @@ readonly class NodeObjectNameSpecificationCollection
         return null;
     }
 
-    public static function createFromNodeTypeAndCollection(NodeType $nodeType, self $collection): NodeObjectNameSpecificationCollection
+    public function combine(self $other): self
     {
-        $typesToInclude = [];
-        foreach ($nodeType->getDeclaredSuperTypes() as $superType) {
-            $type = $collection->findByNodeTypeName($superType->name->value);
-            if ($type instanceof NodeObjectNameSpecification) {
-                $typesToInclude[] = $type;
-            }
-        }
-        return new self(...$typesToInclude);
+        return new self(...$this->items, ...$other->items);
     }
 }
