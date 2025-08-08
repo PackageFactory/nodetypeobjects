@@ -13,32 +13,44 @@ readonly class NodeObjectNameSpecification
 {
     public function __construct(
         public string $nodeTypeName,
-        public string $phpNamespace,
+        public string $packageNamespace,
+        public string $localNamespace,
         public string $className,
     ) {
     }
 
+    public function getFullNamespace(): string
+    {
+        return $this->packageNamespace . '\\' . $this->localNamespace;
+    }
+
     public function getFullyQualifiedClassName(): string
     {
-        return $this->phpNamespace . '\\' . $this->className;
+        return $this->packageNamespace . '\\' . $this->localNamespace . '\\' . $this->className;
+    }
+
+    public function getLocalDirectoryName(): string
+    {
+        return str_replace('\\', DIRECTORY_SEPARATOR, $this->localNamespace);
+    }
+
+    public function getLocalFileName(): string
+    {
+        return str_replace('\\', DIRECTORY_SEPARATOR, $this->localNamespace) . DIRECTORY_SEPARATOR . $this->className . '.php';
     }
 
     public static function createFromNodeTypeName(
         NodeTypeName $nodeTypeName
     ): self {
-
         list($packageKey, $nodeName) = explode(':', $nodeTypeName->value, 2);
-
+        $packageKeyParts = explode('.', $packageKey);
         $localNameParts = explode('.', $nodeName);
-        $localName = array_pop($localNameParts);
-
-        $phpNamespace = str_replace(['.', ':'], ['\\', '\\NodeTypes\\'], $nodeTypeName->value);
-        $className = str_replace('.', '\\', $localName) . 'NodeObject';
-
+        $localName = $localNameParts[array_key_last($localNameParts)];
         return new self(
             $nodeTypeName->value,
-            $phpNamespace,
-            $className,
+            PhpNameHelper::sanitize(implode('\\', $packageKeyParts)),
+            'NodeTypes\\' . PhpNameHelper::sanitize(implode('\\', $localNameParts)),
+            PhpNameHelper::sanitize(str_replace('.', '\\', $localName)) . 'NodeObject'
         );
     }
 

@@ -95,10 +95,10 @@ class NodeObjectsCommandController extends CommandController
         );
 
         foreach ($nodeTypes as $nodeType) {
-            $interfaceSpecification = NodeInterfaceSpecification::createFromPackageAndNodeType($package, $nodeType);
-            Files::createDirectoryRecursively($interfaceSpecification->directory);
+            $interfaceSpecification = NodeInterfaceSpecification::createFromNodeType($nodeType);
+            Files::createDirectoryRecursively($package->getPackagePath() . DIRECTORY_SEPARATOR . $interfaceSpecification->interfaceName->getLocalDirectoryName());
             file_put_contents(
-                $interfaceSpecification->interfaceFilename,
+                $package->getPackagePath() . DIRECTORY_SEPARATOR . $interfaceSpecification->interfaceName->getLocalFileName(),
                 $interfaceSpecification->toPhpString()
             );
             $this->outputLine(' - ' . $interfaceSpecification->interfaceName->nodeTypeName . ' -> <info>' . $interfaceSpecification->interfaceName->getFullyQualifiedClassName() . '</info>');
@@ -115,10 +115,10 @@ class NodeObjectsCommandController extends CommandController
         );
 
         foreach ($nonAbstractNodeTypes as $nodeType) {
-            $objectSpecification = NodeObjectSpecification::createFromPackageAndNodeType($package, $nodeType);
-            Files::createDirectoryRecursively($objectSpecification->directory);
+            $objectSpecification = NodeObjectSpecification::createFromNodeType($nodeType);
+            Files::createDirectoryRecursively($package->getPackagePath() . DIRECTORY_SEPARATOR . $objectSpecification->objectName->getLocalDirectoryName());
             file_put_contents(
-                $objectSpecification->classFilename,
+                $package->getPackagePath() . DIRECTORY_SEPARATOR . $objectSpecification->objectName->getLocalFileName(),
                 $objectSpecification->toPhpString()
             );
             $this->outputLine(' - ' . $objectSpecification->objectName->nodeTypeName . ' -> <info>' . $objectSpecification->objectName->getFullyQualifiedClassName() . '</info>');

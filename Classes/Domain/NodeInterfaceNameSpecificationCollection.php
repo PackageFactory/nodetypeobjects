@@ -35,10 +35,16 @@ readonly class NodeInterfaceNameSpecificationCollection
         $interfaces = [
             NodeInterfaceNameSpecification::createFromNodeType($nodeType)
         ];
-        foreach ($nodeType->getDeclaredSuperTypes() as $superType) {
+
+        if ($nodeType->name->value === 'Vendor.Site:Content.Text') {
+            var_dump(array_keys(self::getFlattenedSuperTypes($nodeType)));
+        }
+        foreach (self::getFlattenedSuperTypes($nodeType) as $superType) {
             $interface = NodeInterfaceNameSpecification::createFromNodeType($superType);
-            if ($checkForExistence && interface_exists($interface->getFullyQualifiedClassName())) {
-                $interfaces[] = $interface;
+            if ($checkForExistence) {
+                if (interface_exists($interface->getFullyQualifiedClassName(), true)) {
+                    $interfaces[] = $interface;
+                }
             } else {
                 $interfaces[] = $interface;
             }
@@ -51,7 +57,23 @@ readonly class NodeInterfaceNameSpecificationCollection
         if (empty($this->items)) {
             return '';
         } else {
-            return 'implements ' . implode(', ', array_map(fn(NodeInterfaceNameSpecification $item)=> $item->getFullyQualifiedClassName(), $this->items));
+            return 'implements ' . implode(', ', array_map(fn(NodeInterfaceNameSpecification $item)=> '\\' . $item->getFullyQualifiedClassName(), $this->items));
         }
+    }
+
+    /**
+     * Returns a flat list of super types to inherit from.
+     *
+     * @return array<string,NodeType>
+     */
+    protected static function getFlattenedSuperTypes(NodeType $nodeType): array
+    {
+        $flattenedSuperTypes = [];
+        foreach ($nodeType->getDeclaredSuperTypes() as $superTypeName => $superType) {
+            $flattenedSuperTypes += static::getFlattenedSuperTypes($superType);
+            $flattenedSuperTypes[$superTypeName] = $superType;
+        }
+
+        return $flattenedSuperTypes;
     }
 }

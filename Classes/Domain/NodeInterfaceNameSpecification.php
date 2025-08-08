@@ -13,32 +13,45 @@ readonly class NodeInterfaceNameSpecification
 {
     public function __construct(
         public string $nodeTypeName,
-        public string $phpNamespace,
-        public string $interfaceName
+        public string $packageNamespace,
+        public string $localNamespace,
+        public string $interfaceName,
     ) {
+    }
+
+    public function getFullNamespace(): string
+    {
+        return $this->packageNamespace . '\\' . $this->localNamespace;
     }
 
     public function getFullyQualifiedClassName(): string
     {
-        return $this->phpNamespace . '\\' . $this->interfaceName;
+        return $this->packageNamespace . '\\' . $this->localNamespace . '\\' . $this->interfaceName;
+    }
+
+    public function getLocalDirectoryName(): string
+    {
+        return str_replace('\\', DIRECTORY_SEPARATOR, $this->localNamespace);
+    }
+
+    public function getLocalFileName(): string
+    {
+        return str_replace('\\', DIRECTORY_SEPARATOR, $this->localNamespace) . DIRECTORY_SEPARATOR . $this->interfaceName . '.php';
+        ;
     }
 
     public static function createFromNodeTypeName(
         NodeTypeName $nodeTypeName
     ): self {
-
         list($packageKey, $nodeName) = explode(':', $nodeTypeName->value, 2);
-
+        $packageKeyParts = explode('.', $packageKey);
         $localNameParts = explode('.', $nodeName);
-        $localName = array_pop($localNameParts);
-
-        $phpNamespace = str_replace(['.', ':'], ['\\', '\\NodeTypes\\'], $nodeTypeName->value);
-        $interfaceName = str_replace('.', '\\', $localName) . 'NodeInterface';
-
+        $localName = $localNameParts[array_key_last($localNameParts)];
         return new self(
             $nodeTypeName->value,
-            $phpNamespace,
-            $interfaceName
+            PhpNameHelper::sanitize(implode('\\', $packageKeyParts)),
+            'NodeTypes\\' . PhpNameHelper::sanitize(implode('\\', $localNameParts)),
+            PhpNameHelper::sanitize(str_replace('.', '\\', $localName)) . 'NodeInterface'
         );
     }
 

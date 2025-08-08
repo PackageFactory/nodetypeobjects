@@ -10,11 +10,32 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 class NodeObjectNameSpecificationTest extends TestCase
 {
-    #[Test]
-    public function detectionOfNamesFromNodeType(): void
+
+    public static function detectionOfNamesFromNodeTypeDataProvider(): \Generator
+    {
+        yield [
+            'Vendor.Example:Foo.Bar',
+            'Vendor\Example',
+            'NodeTypes\Foo\Bar',
+            'BarNodeObject'
+        ];
+
+        yield [
+            '404:404',
+            '_404',
+            'NodeTypes\_404',
+            '_404NodeObject'
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider detectionOfNamesFromNodeTypeDataProvider
+     */
+    public function detectionOfNamesFromNodeType(string $nodeTypeName, string $expectedPackageNamespace, string $expectedLocalNamespace, string $expectedClass): void
     {
         $nodeType = new NodeType(
-            NodeTypeName::fromString('Vendor.Example:Foo.Bar'),
+            NodeTypeName::fromString($nodeTypeName),
             [],
             []
         );
@@ -25,9 +46,10 @@ class NodeObjectNameSpecificationTest extends TestCase
 
         $this->assertEquals(
             new NodeObjectNameSpecification(
-                'Vendor.Example:Foo.Bar',
-                'Vendor\Example\NodeTypes\Foo\Bar',
-                'BarNodeObject',
+                $nodeTypeName,
+                $expectedPackageNamespace,
+                $expectedLocalNamespace,
+                $expectedClass,
             ),
             $specification
         );

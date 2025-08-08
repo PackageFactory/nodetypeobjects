@@ -15,39 +15,16 @@ readonly class NodeObjectSpecification
         public NodeObjectNameSpecification $objectName,
         public NodeInterfaceNameSpecificationCollection $interfaceNames,
         public NodePropertySpecificationCollection $properties,
-        public string $directory,
-        public string $classFilename,
     ) {
     }
 
-    public static function createFromPackageAndNodeType(
-        FlowPackageInterface $package,
+    public static function createFromNodeType(
         NodeType $nodeType,
     ): self {
-
-        if (!str_starts_with($nodeType->name->value, $package->getPackageKey() . ':')) {
-            throw new \Exception("Only nodetypes from the given package are allowed");
-        }
-
-        $nameSpecification = NodeObjectNameSpecification::createFromNodeType($nodeType);
-
-        $localNameParts = explode('.', str_replace($package->getPackageKey() . ':', '', $nodeType->name->value));
-        $localName = array_pop($localNameParts);
-        $localNamespace = implode('.', $localNameParts);
-
-        $directory = $package->getPackagePath()
-            . 'NodeTypes' . DIRECTORY_SEPARATOR
-            . ($localNamespace ? str_replace('.', DIRECTORY_SEPARATOR, $localNamespace) . DIRECTORY_SEPARATOR : '')
-            . $localName;
-
-        $classFilename = $directory . DIRECTORY_SEPARATOR . $nameSpecification->className . '.php';
-
         return new self(
-            $nameSpecification,
+            NodeObjectNameSpecification::createFromNodeType($nodeType),
             NodeInterfaceNameSpecificationCollection::createFromNodeType($nodeType, true),
             NodePropertySpecificationCollection::createFromNodeType($nodeType),
-            $directory,
-            $classFilename
         );
     }
 
@@ -72,7 +49,7 @@ readonly class NodeObjectSpecification
 
         declare(strict_types=1);
 
-        namespace {$this->objectName->phpNamespace};
+        namespace {$this->objectName->getFullNamespace()};
 
         use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
         use Neos\Flow\Annotations as Flow;

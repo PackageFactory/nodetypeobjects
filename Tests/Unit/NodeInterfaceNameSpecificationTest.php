@@ -11,11 +11,31 @@ use PHPUnit\Framework\Attributes\Test;
 
 class NodeInterfaceNameSpecificationTest extends TestCase
 {
-    #[Test]
-    public function detectionOfNamesFromNodeType(): void
+    public static function detectionOfNamesFromNodeTypeDataProvider(): \Generator
+    {
+        yield [
+                'Vendor.Example:Foo.Bar',
+                'Vendor\Example',
+                'NodeTypes\Foo\Bar',
+                'BarNodeInterface'
+        ];
+
+        yield [
+            '404:404',
+            '_404',
+            'NodeTypes\_404',
+            '_404NodeInterface'
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider detectionOfNamesFromNodeTypeDataProvider
+     */
+    public function detectionOfNamesFromNodeType(string $nodeTypeName, string $expectedPackageNamespace, string $expectedLocalNamespace, string $expectedInterface): void
     {
         $nodeType = new NodeType(
-            NodeTypeName::fromString('Vendor.Example:Foo.Bar'),
+            NodeTypeName::fromString($nodeTypeName),
             [],
             []
         );
@@ -26,9 +46,10 @@ class NodeInterfaceNameSpecificationTest extends TestCase
 
         $this->assertEquals(
             new NodeInterfaceNameSpecification(
-                'Vendor.Example:Foo.Bar',
-                'Vendor\Example\NodeTypes\Foo\Bar',
-                'BarNodeInterface',
+                $nodeTypeName,
+                $expectedPackageNamespace,
+                $expectedLocalNamespace,
+                $expectedInterface,
             ),
             $specification
         );
