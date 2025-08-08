@@ -9,7 +9,6 @@ use PackageFactory\NodeTypeObjects\Domain\NodePropertySpecification;
 use PackageFactory\NodeTypeObjects\Domain\NodePropertySpecificationCollection;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-
 class NodePropertySpecificationCollectionTest extends TestCase
 {
     #[Test]

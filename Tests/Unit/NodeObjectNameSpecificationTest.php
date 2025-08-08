@@ -8,10 +8,8 @@ use Neos\ContentRepository\Core\NodeType\NodeTypeName;
 use PackageFactory\NodeTypeObjects\Domain\NodeObjectNameSpecification;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-
 class NodeObjectNameSpecificationTest extends TestCase
 {
-
     #[Test]
     public function detectionOfNamesFromNodeType(): void
     {

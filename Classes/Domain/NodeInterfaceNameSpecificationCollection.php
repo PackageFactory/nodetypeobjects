@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PackageFactory\NodeTypeObjects\Domain;
 
-use Behat\Gherkin\Node\NodeInterface;
 use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\Flow\Annotations as Flow;
 
@@ -24,14 +23,6 @@ readonly class NodeInterfaceNameSpecificationCollection
             $itemsIndexedByName[ $nodeTypeObjectNameSpecification->nodeTypeName ] = $nodeTypeObjectNameSpecification;
         }
         $this->items = $itemsIndexedByName;
-    }
-
-    public function findByNodeTypeName(string $nodeTypeName): ?NodeInterfaceNameSpecification
-    {
-        if (array_key_exists($nodeTypeName, $this->items)) {
-            return $this->items[$nodeTypeName];
-        }
-        return null;
     }
 
     public function combine(self $other): self

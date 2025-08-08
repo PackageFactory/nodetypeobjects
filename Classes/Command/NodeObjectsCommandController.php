@@ -12,10 +12,7 @@ use Neos\Flow\Package\FlowPackageInterface;
 use Neos\Flow\Package\GenericPackage;
 use Neos\Flow\Package\PackageManager;
 use Neos\Utility\Files;
-use PackageFactory\NodeTypeObjects\Domain\NodeInterfaceNameSpecification;
 use PackageFactory\NodeTypeObjects\Domain\NodeInterfaceSpecification;
-use PackageFactory\NodeTypeObjects\Domain\NodeObjectNameSpecification;
-use PackageFactory\NodeTypeObjects\Domain\NodeObjectNameSpecificationCollection;
 use PackageFactory\NodeTypeObjects\Domain\NodeObjectSpecification;
 
 class NodeObjectsCommandController extends CommandController

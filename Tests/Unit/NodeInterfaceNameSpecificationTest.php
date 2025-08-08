@@ -6,8 +6,6 @@ namespace PackageFactory\NodeTypeObjects\Test;
 use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\ContentRepository\Core\NodeType\NodeTypeName;
 use PackageFactory\NodeTypeObjects\Domain\NodeInterfaceNameSpecification;
-use PackageFactory\NodeTypeObjects\Domain\NodeInterfaceNameSpecificationCollection;
-use PackageFactory\NodeTypeObjects\Domain\NodeObjectNameSpecification;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
