@@ -8,15 +8,15 @@ use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\Flow\Annotations as Flow;
 
 #[Flow\Proxy(false)]
-readonly class NodeTypeObjectNameSpecificationCollection
+readonly class NodeObjectNameSpecificationCollection
 {
     /**
-     * @var array<string,NodeTypeObjectNameSpecification>
+     * @var array<string,NodeObjectNameSpecification>
      */
     public array $items;
 
     public function __construct(
-        NodeTypeObjectNameSpecification ...$items
+        NodeObjectNameSpecification ...$items
     ) {
         $itemsIndexedByName = [];
         foreach ($items as $nodeTypeObjectNameSpecification) {
@@ -25,7 +25,7 @@ readonly class NodeTypeObjectNameSpecificationCollection
         $this->items = $itemsIndexedByName;
     }
 
-    public function findByNodeTypeName(string $nodeTypeName): ?NodeTypeObjectNameSpecification
+    public function findByNodeTypeName(string $nodeTypeName): ?NodeObjectNameSpecification
     {
         if (array_key_exists($nodeTypeName, $this->items)) {
             return $this->items[$nodeTypeName];
@@ -33,12 +33,12 @@ readonly class NodeTypeObjectNameSpecificationCollection
         return null;
     }
 
-    public static function createFromNodeTypeAndCollection(NodeType $nodeType, self $collection): NodeTypeObjectNameSpecificationCollection
+    public static function createFromNodeTypeAndCollection(NodeType $nodeType, self $collection): NodeObjectNameSpecificationCollection
     {
         $typesToInclude = [];
         foreach ($nodeType->getDeclaredSuperTypes() as $superType) {
             $type = $collection->findByNodeTypeName($superType->name->value);
-            if ($type instanceof NodeTypeObjectNameSpecification) {
+            if ($type instanceof NodeObjectNameSpecification) {
                 $typesToInclude[] = $type;
             }
         }

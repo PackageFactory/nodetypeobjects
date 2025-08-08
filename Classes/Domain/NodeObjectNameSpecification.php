@@ -8,7 +8,7 @@ use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\Flow\Annotations as Flow;
 
 #[Flow\Proxy(false)]
-readonly class NodeTypeObjectNameSpecification
+readonly class NodeObjectNameSpecification
 {
     public function __construct(
         public string $nodeTypeName,

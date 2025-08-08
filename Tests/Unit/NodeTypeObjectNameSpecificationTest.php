@@ -5,7 +5,7 @@ namespace PackageFactory\NodeTypeObjects\Test;
 
 use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\ContentRepository\Core\NodeType\NodeTypeName;
-use PackageFactory\NodeTypeObjects\Domain\NodeTypeObjectNameSpecification;
+use PackageFactory\NodeTypeObjects\Domain\NodeObjectNameSpecification;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -21,12 +21,12 @@ class NodeTypeObjectNameSpecificationTest extends TestCase
             []
         );
 
-        $specification = NodeTypeObjectNameSpecification::createFromNodeType(
+        $specification = NodeObjectNameSpecification::createFromNodeType(
             $nodeType,
         );
 
         $this->assertEquals(
-            new NodeTypeObjectNameSpecification(
+            new NodeObjectNameSpecification(
                 'Vendor.Example:Foo.Bar',
                 'Vendor\Example\NodeTypes\Foo\Bar',
                 'BarNodeObject',
@@ -49,12 +49,12 @@ class NodeTypeObjectNameSpecificationTest extends TestCase
             ]
         );
 
-        $specification = NodeTypeObjectNameSpecification::createFromNodeType(
+        $specification = NodeObjectNameSpecification::createFromNodeType(
             $nodeType,
         );
 
         $this->assertEquals(
-            new NodeTypeObjectNameSpecification(
+            new NodeObjectNameSpecification(
                 'Vendor.Example:Foo.Bar',
                 'Vendor\Example\NodeTypes\Foo\Bar',
                 null,

@@ -9,12 +9,12 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Package\FlowPackageInterface;
 
 #[Flow\Proxy(false)]
-readonly class NodeTypeObjectSpecification
+readonly class NodeObjectSpecification
 {
     public function __construct(
-        public NodeTypeObjectNameSpecification $names,
+        public NodeObjectNameSpecification $names,
         public NodePropertySpecificationCollection $properties,
-        public NodeTypeObjectNameSpecificationCollection $superTypes,
+        public NodeObjectNameSpecificationCollection $superTypes,
         public string $directory,
         public ?string $classFilename,
         public ?string $interfaceFilename,
@@ -24,14 +24,14 @@ readonly class NodeTypeObjectSpecification
     public static function createFromPackageAndNodeType(
         FlowPackageInterface $package,
         NodeType $nodeType,
-        NodeTypeObjectNameSpecificationCollection $nameCollection
+        NodeObjectNameSpecificationCollection $nameCollection
     ): self {
 
         if (!str_starts_with($nodeType->name->value, $package->getPackageKey() . ':')) {
             throw new \Exception("Only nodetypes from the given package are allowed");
         }
 
-        $nameSpecification = NodeTypeObjectNameSpecification::createFromNodeType($nodeType);
+        $nameSpecification = NodeObjectNameSpecification::createFromNodeType($nodeType);
 
         $localNameParts = explode('.', str_replace($package->getPackageKey() . ':', '', $nodeType->name->value));
         $localName = array_pop($localNameParts);
@@ -48,7 +48,7 @@ readonly class NodeTypeObjectSpecification
         return new self(
             $nameSpecification,
             NodePropertySpecificationCollection::createFromNodeType($nodeType),
-            NodeTypeObjectNameSpecificationCollection::createFromNodeTypeAndCollection($nodeType, $nameCollection),
+            NodeObjectNameSpecificationCollection::createFromNodeTypeAndCollection($nodeType, $nameCollection),
             $directory,
             $classFilename,
             $interfaceFileName
@@ -80,7 +80,7 @@ readonly class NodeTypeObjectSpecification
             }
         }
 
-        $interfaceNames[] = '\\' . NodeTypeObjectInterface::class;
+        $interfaceNames[] = '\\' . NodeObjectInterface::class;
 
         $interfaceDeclaration = 'implements ' . implode(', ', $interfaceNames);
 
